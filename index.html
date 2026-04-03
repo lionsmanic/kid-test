@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Smart Quiz Hub Pro</title>
+    <title>AI Smart Quiz Hub Pro Max</title>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --primary: #6C63FF; /* 柔和的紫藍色主色調 */
-            --secondary: #FF6584; /* 活潑的粉紅色點綴 */
+            --primary: #6C63FF; 
+            --secondary: #FF6584; 
             --bg: #F4F7FB; 
             --text: #2D3748; 
             --card-bg: #FFFFFF;
@@ -23,7 +23,7 @@
             box-sizing: border-box; 
             overscroll-behavior-y: none; 
             background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-            background-size: 20px 20px; /* 淡淡的點狀背景 */
+            background-size: 20px 20px; 
         }
         .container { 
             max-width: 850px; 
@@ -46,7 +46,6 @@
         input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); }
         textarea { height: 120px; resize: vertical; }
         
-        /* 漂亮的按鈕設計 */
         button { 
             background: linear-gradient(135deg, #6C63FF 0%, #483D8B 100%); 
             color: white; padding: 16px; border: none; border-radius: 12px; 
@@ -66,7 +65,6 @@
         #qrImage { max-width: 200px; margin-top: 15px; border: 8px solid #fff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         #scanner-container { display: none; margin-top: 15px; border: 3px solid #F59E0B; border-radius: 16px; overflow: hidden; background: #fff;}
 
-        /* 學生測驗卡片美化 */
         .question-card { 
             background: #ffffff; padding: 25px; margin: 20px 0; 
             border-radius: 20px; border: none; 
@@ -80,33 +78,21 @@
         .text-ans-input { font-size: 22px; text-align: center; border: 2px dashed #94a3b8 !important; background: #fff; }
         .text-ans-input:focus { border-style: solid !important; border-color: var(--primary) !important; }
         
-        /* 筆記本風格的畫布 */
         .canvas-container { 
             background-color: #ffffff;
-            /* 橫線筆記本效果 */
             background-image: repeating-linear-gradient(transparent, transparent 31px, #e2e8f0 31px, #e2e8f0 32px);
-            background-size: 100% 32px;
-            background-position: 0 10px;
-            border: 2px solid #cbd5e1; 
-            margin: 10px 0; 
-            border-radius: 12px; 
-            overflow: hidden;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
+            background-size: 100% 32px; background-position: 0 10px;
+            border: 2px solid #cbd5e1; margin: 10px 0; border-radius: 12px; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
         }
-        canvas { width: 100%; height: 192px; display: block; touch-action: none; cursor: crosshair; } /* 高度調成 32px 的倍數對齊格線 */
+        canvas { width: 100%; height: 192px; display: block; touch-action: none; cursor: crosshair; }
         
         .tools { display: flex; gap: 10px; margin-bottom: 12px; }
-        .tool-btn { 
-            flex: 1; padding: 12px; font-size: 16px; background: #f1f5f9; 
-            border-radius: 10px; border: 2px solid transparent; color: #475569; 
-            font-weight: 600; box-shadow: none; margin-top: 0;
-        }
+        .tool-btn { flex: 1; padding: 12px; font-size: 16px; background: #f1f5f9; border-radius: 10px; border: 2px solid transparent; color: #475569; font-weight: 600; box-shadow: none; margin-top: 0; }
         .tool-btn:hover { transform: none; background: #e2e8f0; }
         .tool-btn.active { background: #ebf4ff; color: var(--primary); border-color: var(--primary); }
         .clear-btn { background: #fee2e2; color: #ef4444; }
         .clear-btn:hover { background: #fecaca; }
         
-        /* 批改回饋美化 */
         .feedback { padding: 20px; margin-top: 20px; border-radius: 16px; display: none; font-weight: bold; text-align: center; font-size: 18px; line-height: 1.6; animation: popIn 0.4s ease-out;}
         @keyframes popIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         .correct { background: #f0fdf4; color: #166534; border: 2px solid #22c55e; }
@@ -119,13 +105,17 @@
         .setting-label { font-weight: 800; color: #4a5568; display: block; margin-top: 20px; font-size: 16px; }
         .file-upload-wrapper { background: #fff; padding: 15px; border-radius: 12px; border: 2px dashed #cbd5e1; text-align: center; margin-bottom: 16px; }
         .file-upload-wrapper input[type="file"] { margin: 0; padding: 0; border: none; }
+        
+        /* 檔案列表預覽樣式 */
+        #fileList { margin-top: 10px; font-size: 14px; color: #64748b; text-align: left; }
+        .file-item { display: inline-block; background: #e2e8f0; padding: 4px 10px; border-radius: 20px; margin: 4px 4px 0 0; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法出題中心 Dashboard</h2>
+        <h2>✨ AI 魔法綜合出題中心</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <div style="display:flex; gap:10px; margin-top: 10px;">
@@ -147,17 +137,18 @@
             <option value="English">English</option>
         </select>
 
-        <label class="setting-label">📎 上傳參考資料 (圖片/PDF) Optional Attachment:</label>
+        <label class="setting-label">📎 上傳參考資料 (可選多個檔案):</label>
         <div class="file-upload-wrapper">
-            <input type="file" id="fileInput" accept="image/jpeg, image/png, image/webp, application/pdf">
-            <div style="font-size: 14px; color: #64748b; margin-top: 8px;">支援 JPG, PNG 或 PDF。若為 Word/PPT 請先另存為 PDF。</div>
+            <input type="file" id="fileInput" accept="image/jpeg, image/png, image/webp, application/pdf" multiple onchange="updateFileList()">
+            <div style="font-size: 14px; color: #64748b; margin-top: 8px;">支援 JPG, PNG 或 PDF。可以一次框選多張照片或檔案喔！</div>
+            <div id="fileList"></div>
         </div>
 
-        <label class="setting-label">🎯 出題指令 (Topic & Instructions):</label>
-        <textarea id="promptText" placeholder="例如：請根據上傳的圖片，幫我出 3 題類似的數學應用題... \n e.g. Create 3 science questions based on the attached PDF..."></textarea>
+        <label class="setting-label">🎯 出題綜合指令 (Topic & Instructions):</label>
+        <textarea id="promptText" placeholder="例如：請綜合我上傳的 PDF 第一章和這兩張筆記照片，幫我出 5 題觀念混合題..."></textarea>
         
-        <button onclick="generateQuiz()" id="genBtn">🚀 1. 產生考卷 Generate Questions</button>
-        <p id="loading">✨ AI 正在施展魔法中... AI is generating...</p>
+        <button onclick="generateQuiz()" id="genBtn">🚀 1. 綜合產生考卷 Generate Questions</button>
+        <p id="loading">✨ AI 正在消化大量資料中... AI is processing...</p>
 
         <div id="previewZone" style="display:none; margin-top:25px; background:#fff; padding:20px; border-radius:16px; border: 2px solid #e2e8f0;">
             <h3 style="margin-top:0; color: #4a5568;">📋 考卷預覽 Quiz Preview:</h3>
@@ -212,6 +203,20 @@
         }
     };
 
+    // 顯示使用者選了哪些檔案
+    function updateFileList() {
+        const fileInput = document.getElementById('fileInput');
+        const fileListDiv = document.getElementById('fileList');
+        fileListDiv.innerHTML = '';
+        if (fileInput.files.length > 0) {
+            let html = '<b>已選擇的檔案：</b><br>';
+            for (let i = 0; i < fileInput.files.length; i++) {
+                html += `<span class="file-item">📄 ${fileInput.files[i].name}</span>`;
+            }
+            fileListDiv.innerHTML = html;
+        }
+    }
+
     function startScanner() {
         document.getElementById('scanner-container').style.display = 'block';
         html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
@@ -236,13 +241,12 @@
         document.getElementById('scanner-container').style.display = 'none';
     }
 
-    // 將上傳檔案轉成 Base64 格式給 AI 讀取
+    // 將上傳檔案轉成 Base64 格式
     function getFileBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = () => {
-                // 移除 base64 字串前面的 "data:image/png;base64," 宣告
                 let encoded = reader.result.toString().replace(/^data:(.*,)?/, '');
                 resolve({ mime_type: file.type, data: encoded });
             };
@@ -257,7 +261,7 @@
         const fileInput = document.getElementById('fileInput');
         
         if (!apiKey || (!prompt && fileInput.files.length === 0)) { 
-            alert("請輸入 API Key，並且提供文字指令或上傳檔案喔！"); 
+            alert("請輸入 API Key，並且提供文字指令或至少上傳一個檔案喔！"); 
             return; 
         }
         
@@ -270,23 +274,27 @@
         document.getElementById('qrZone').style.display = 'none';
 
         const sysPrompt = `You are an expert educational assistant for children. 
-        Create a quiz based on the user's instructions AND the provided file (if any).
+        Create a quiz based on the user's instructions AND the provided files (if any). Combine knowledge from all inputs.
         You MUST output strictly as a JSON array of objects. 
         Each object must have exactly two keys: "question" and "answer".
         The output language MUST be exactly: ${lang}.
         Format example: [{"question": "What is the capital of France?", "answer": "Paris"}, {"question": "5 + 7 =", "answer": "12"}]
         DO NOT wrap in markdown like \`\`\`json. Return ONLY the pure JSON array.`;
 
-        // 組合傳送給 Gemini 的資料包
+        // 建立傳送給 API 的陣列
         let apiParts = [{ text: sysPrompt + "\nUser Instructions: " + prompt }];
         
         try {
-            // 如果有上傳檔案，把它加進去
+            // 迴圈處理每一個上傳的檔案
             if (fileInput.files.length > 0) {
-                const fileObj = fileInput.files[0];
-                document.getElementById('loading').innerText = "✨ 正在讀取檔案與思考中... AI is processing file & thinking...";
-                const fileData = await getFileBase64(fileObj);
-                apiParts.push({ inline_data: { mime_type: fileData.mime_type, data: fileData.data } });
+                document.getElementById('loading').innerText = `✨ 正在讀取 ${fileInput.files.length} 個檔案與綜合思考中... Processing files...`;
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    const fileObj = fileInput.files[i];
+                    const fileData = await getFileBase64(fileObj);
+                    apiParts.push({ inline_data: { mime_type: fileData.mime_type, data: fileData.data } });
+                }
+            } else {
+                document.getElementById('loading').innerText = "✨ AI 正在施展魔法中... AI is generating...";
             }
 
             const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
@@ -306,10 +314,9 @@
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             
         } catch (e) { 
-            alert("生成失敗 (可能是檔案太大、或是 AI 格式錯誤): " + e.message); 
+            alert("生成失敗 (可能是上傳的檔案總量太大、或是指令過於模糊): " + e.message); 
         } finally { 
             document.getElementById('loading').style.display = 'none'; 
-            document.getElementById('loading').innerText = "✨ AI 正在施展魔法中... AI is generating...";
             document.getElementById('genBtn').disabled = false;
         }
     }
@@ -368,16 +375,14 @@
         window.scrollTo(0, 0);
     }
 
-    // 畫布初始化：修改為筆記本橫線間距(32px)的倍數
     function initCanvas(index) {
         const canvas = document.getElementById(`canvas_${index}`);
         const ctx = canvas.getContext('2d');
         const ratio = window.devicePixelRatio || 1;
         canvas.width = canvas.offsetWidth * ratio; 
-        canvas.height = 192 * ratio; // 32px * 6 lines
+        canvas.height = 192 * ratio;
         ctx.scale(ratio, ratio);
         
-        // 背景留透明，讓 CSS 的筆記本格線透出來
         ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = 4; ctx.strokeStyle = "#1e293b";
         let drawing = false; let lx, ly;
         canvases[index] = { canvas, ctx, tool: 'pen' };
@@ -427,10 +432,9 @@
             let promptBase = "";
 
             if (textInputVal !== "") {
-                promptBase = `You are a supportive teacher grading a student. Question: "${currentQuizData[i].question}". Correct strictly answer: "${ans}". Student typed: "${textInputVal}". Does it mean the same? Ignore minor typos. Return strictly JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
+                promptBase = `You are a supportive teacher grading a student. Question: "${currentQuizData[i].question}". Correct answer: "${ans}". Student typed: "${textInputVal}". Does it mean the same? Ignore minor typos. Return strictly JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
                 requestBody.contents[0].parts.push({ text: promptBase });
             } else {
-                // 若沒有打字，判斷畫布是否為空白
                 const canvasEl = canvases[i].canvas;
                 const ctx = canvases[i].ctx;
                 const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height).data;
@@ -445,7 +449,6 @@
                     continue;
                 }
 
-                // 畫布有內容，建立一個有白底的暫存畫布來產生截圖 (避免透明底被判定成黑圖)
                 const tempCanvas = document.createElement('canvas');
                 tempCanvas.width = canvasEl.width; tempCanvas.height = canvasEl.height;
                 const tempCtx = tempCanvas.getContext('2d');
@@ -472,4 +475,42 @@
                     f.innerHTML=`⭕ 答對了！ Correct!<br><span style="font-size:16px; color:#15803d;">老師說: ${res.msg}</span>`; 
                     score++; 
                 } else { 
-                    f.className='feedback wrong';
+                    f.className='feedback wrong'; 
+                    f.innerHTML=`❌ 不對喔！ Let's try again!<br><span style="font-size:16px; color:#b91c1c;">老師說: ${res.msg}</span><br><b style="color:#7f1d1d; margin-top:8px; display:block;">標準答案 Ans: ${ans}</b>`; 
+                }
+            } catch(e) { 
+                f.className='feedback wrong'; 
+                f.innerHTML=`⚠️ 閱卷過程有點小迷糊，請家長幫忙看一下！<br><b style="color:#7f1d1d;">標準答案 Ans: ${ans}</b>`; 
+            }
+        }
+        
+        status.innerText = `🎉 批改完成！總得分： ${score} / ${currentQuizData.length}`;
+        gradeBtn.style.display = 'none';
+        saveRecord(score, currentQuizData.length);
+    }
+
+    function saveRecord(s, t) {
+        const history = JSON.parse(localStorage.getItem('quizHistory') || '[]');
+        const opts = { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
+        history.unshift({ date: new Date().toLocaleString(undefined, opts), score: `${s} / ${t}` });
+        localStorage.setItem('quizHistory', JSON.stringify(history));
+    }
+
+    function showHistory() {
+        document.getElementById('parentZone').style.display='none';
+        document.getElementById('historyZone').style.display='block';
+        const h = JSON.parse(localStorage.getItem('quizHistory') || '[]');
+        document.getElementById('historyContainer').innerHTML = h.length ? 
+            h.map(r => `<div class="history-item"><div><small style="color:#64748b; font-weight:800;">Date</small><br><span style="font-size:18px;">${r.date}</span></div><b class="history-score">${r.score}</b></div>`).join('') : 
+            '<div style="text-align:center; padding: 30px; color: #94a3b8; font-weight:800; font-size:18px;">目前還沒有紀錄喔！<br>No history yet.</div>';
+    }
+
+    function clearHistory() {
+        if(confirm("確定要刪除所有紀錄嗎？ Are you sure?")) {
+            localStorage.removeItem('quizHistory');
+            showHistory();
+        }
+    }
+</script>
+</body>
+</html>
