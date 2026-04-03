@@ -19,6 +19,8 @@
         input[type="password"], input[type="text"], textarea, select, input[type="file"] { width: 100%; padding: 14px; margin: 8px 0 16px 0; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; font-family: inherit; transition: border-color 0.3s; }
         input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); }
         textarea { height: 120px; resize: vertical; }
+        .transcript-box { height: 180px; background-color: #fefce8; border-color: #fde047; }
+        .transcript-box:focus { border-color: #eab308; }
         
         button { background: linear-gradient(135deg, #6C63FF 0%, #483D8B 100%); color: white; padding: 16px; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; font-weight: 800; width: 100%; margin-top: 10px; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3); }
         button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4); }
@@ -110,7 +112,7 @@
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (影音出題版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (真文本精準版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <div style="display:flex; gap:10px; margin-top: 10px;">
@@ -132,18 +134,17 @@
             <option value="English">English</option>
         </select>
 
-        <label class="setting-label">🎬 從 YouTube 影片出題 (YouTube URL):</label>
-        <input type="text" id="youtubeUrl" placeholder="貼上網址 (例如：https://youtu.be/...)">
-        <div style="font-size: 14px; color: #64748b; margin-top: -8px; margin-bottom: 16px;">貼上影片網址，讓 AI 幫你從影片抓重點出題！</div>
+        <label class="setting-label">📚 貼上長篇文章或影片字幕 (Text / Transcript):</label>
+        <textarea id="longTextData" class="transcript-box" placeholder="如果您想從 YouTube 影片出題，請在此貼上「影片的字幕 (Transcript)」或直接貼上網路文章內容，這樣 AI 出題才會100%精準喔！"></textarea>
 
-        <label class="setting-label">📎 上傳參考資料 (可選多個圖片/PDF):</label>
+        <label class="setting-label">📎 上傳參考照片/PDF (圖片題適用):</label>
         <div class="file-upload-wrapper">
             <input type="file" id="fileInput" accept="image/jpeg, image/png, image/webp, application/pdf" multiple onchange="updateFileList()">
             <div id="fileList"></div>
         </div>
 
         <label class="setting-label">🎯 出題綜合指令 (Topic & Instructions):</label>
-        <textarea id="promptText" placeholder="例如：請綜合上傳的影片和講義，幫我出 5 題觀念題..."></textarea>
+        <textarea id="promptText" placeholder="例如：請根據上方的字幕內容，幫我出 5 題觀念選擇題，選項請放在題目裡面..."></textarea>
         
         <button onclick="generateQuiz()" id="genBtn">🚀 1. 綜合產生考卷 Generate Questions</button>
         <p id="loading">✨ AI 正在消化大量資料中... AI is processing...</p>
@@ -290,30 +291,29 @@
         }
     }
 
-    // 🚀【升級核心】：整合 YouTube 網址到 Prompt
     async function generateQuiz() {
         const apiKey = document.getElementById('apiKey').value.trim();
-        let prompt = document.getElementById('promptText').value.trim();
+        const prompt = document.getElementById('promptText').value.trim();
+        const transcriptText = document.getElementById('longTextData').value.trim();
         const lang = document.getElementById('langSelect').value;
         const fileInput = document.getElementById('fileInput');
-        const ytUrl = document.getElementById('youtubeUrl').value.trim();
         
-        if (!apiKey || (!prompt && fileInput.files.length === 0 && !ytUrl)) { 
-            alert("請輸入 API Key，並且提供指令、檔案或 YouTube 網址喔！"); return; 
+        if (!apiKey || (!prompt && !transcriptText && fileInput.files.length === 0)) { 
+            alert("請輸入 API Key，並且至少提供指令、字幕文本或檔案其中一項喔！"); return; 
         }
         
         localStorage.setItem('geminiApiKey', apiKey); localStorage.setItem('quizLanguage', lang);
         document.getElementById('genBtn').disabled = true; document.getElementById('loading').style.display = 'block';
         document.getElementById('previewZone').style.display = 'none'; document.getElementById('qrZone').style.display = 'none';
 
-        // 整合 YouTube 提示
-        let finalPrompt = prompt;
-        if (ytUrl) {
-            finalPrompt += `\n\n[Important: Please base the questions primarily on the content from this YouTube video: ${ytUrl}]`;
+        // 整合文字與指令
+        let finalInstruction = prompt;
+        if (transcriptText) {
+            finalInstruction += `\n\n[Reference Text / Transcript to base questions on]:\n"""\n${transcriptText}\n"""`;
         }
 
-        const sysPrompt = `You are an expert educational assistant. Create a quiz based on user instructions, files, or provided links. MUST output strictly as a JSON array of objects with keys: "question" and "answer". Output language MUST be exactly: ${lang}. DO NOT wrap in markdown like \`\`\`json. Return ONLY the pure JSON array.`;
-        let apiParts = [{ text: sysPrompt + "\nUser Instructions: " + finalPrompt }];
+        const sysPrompt = `You are an expert educational assistant. Create a quiz based strictly on the provided reference text, files, and user instructions. MUST output strictly as a JSON array of objects with keys: "question" and "answer". Output language MUST be exactly: ${lang}. DO NOT wrap in markdown like \`\`\`json. Return ONLY the pure JSON array.`;
+        let apiParts = [{ text: sysPrompt + "\n\nUser Instructions & Content:\n" + finalInstruction }];
         
         try {
             if (fileInput.files.length > 0) {
@@ -336,7 +336,7 @@
 
             currentQuizId = "quiz_" + Date.now().toString();
             // 自動命名標題優化
-            let rawTitle = prompt ? prompt : (ytUrl ? "YouTube 影片測驗" : currentQuizData[0].question);
+            let rawTitle = prompt ? prompt : (transcriptText ? "文章/影片字幕測驗" : currentQuizData[0].question);
             let generatedTitle = rawTitle.substring(0, 20) + (rawTitle.length > 20 ? "..." : "");
             
             const langPrefix = lang.includes('中文') ? '[TW]' : '[EN]';
@@ -346,7 +346,7 @@
             document.getElementById('previewZone').style.display = 'block';
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             
-        } catch (e) { alert("生成失敗: " + e.message); } 
+        } catch (e) { alert("生成失敗 (可能格式錯誤或 API 阻擋): " + e.message); } 
         finally { document.getElementById('loading').style.display = 'none'; document.getElementById('genBtn').disabled = false; }
     }
 
@@ -354,7 +354,7 @@
 
     function generateQRCode() {
         const langPrefix = document.getElementById('langSelect').value.includes('中文') ? '[TW]' : '[EN]';
-        let rawTitle = document.getElementById('promptText').value.trim() || document.getElementById('youtubeUrl').value.trim() || "從手機傳送的測驗";
+        let rawTitle = document.getElementById('promptText').value.trim() || (document.getElementById('longTextData').value.trim() ? "文章/影片字幕測驗" : "從手機傳送的測驗");
         let generatedTitle = rawTitle.substring(0, 20) + (rawTitle.length > 20 ? "..." : "");
         
         const payload = { title: `${langPrefix} ${generatedTitle}`, data: currentQuizData };
