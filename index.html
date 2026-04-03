@@ -14,7 +14,7 @@
         .section { margin-bottom: 25px; padding: 25px; border-radius: 16px; background: #f8faff; border: 1px solid #e2e8f0; }
         .student-section { background: #fffcf5; border-color: #fef08a; display: none; }
         .history-section { background: #f0fdf4; border-color: #bbf7d0; display: none; }
-        .review-section { background: #fdf2f8; border-color: #fbcfe8; display: none; } /* 回顧專區樣式 */
+        .review-section { background: #fdf2f8; border-color: #fbcfe8; display: none; }
         
         input[type="password"], input[type="text"], textarea, select, input[type="file"] { width: 100%; padding: 14px; margin: 8px 0 16px 0; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; font-family: inherit; transition: border-color 0.3s; }
         input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); }
@@ -30,7 +30,6 @@
         .history-btn { background: linear-gradient(135deg, #10B981 0%, #059669 100%); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
         .grade-btn { background: linear-gradient(135deg, #EC4899 0%, #BE185D 100%); font-size: 24px; padding: 20px; box-shadow: 0 8px 25px rgba(236, 72, 153, 0.4); }
         
-        /* 歷史區小按鈕 */
         .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .card-action-btn { padding: 10px; font-size: 16px; border-radius: 10px; text-align: center; margin-top: 0; box-shadow: none; }
         .card-action-btn:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
@@ -40,7 +39,6 @@
         .del-btn { background: #fee2e2; color: #ef4444; }
         .del-btn:hover { background: #fecaca; color: #b91c1c; }
         
-        /* 回顧詳情按鈕 */
         .view-detail-btn { background: #e2e8f0; color: #475569; padding: 6px 12px; font-size: 14px; border-radius: 8px; margin-left: 10px; width: auto; display: inline-block; box-shadow: none;}
         .view-detail-btn:hover { background: #cbd5e1; box-shadow: none; transform: scale(1.05); }
 
@@ -59,7 +57,6 @@
         .canvas-container { background-color: #ffffff; background-image: repeating-linear-gradient(transparent, transparent 31px, #e2e8f0 31px, #e2e8f0 32px); background-size: 100% 32px; background-position: 0 10px; border: 2px solid #cbd5e1; margin: 10px 0; border-radius: 12px; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
         canvas { width: 100%; height: 192px; display: block; touch-action: none; cursor: crosshair; }
         
-        /* 回顧模式中的筆跡圖片顯示 */
         .review-img { width: 100%; max-width: 500px; border: 2px dashed #cbd5e1; border-radius: 12px; display: block; margin: 10px auto; background: #fff;}
         .review-text-ans { font-size: 22px; font-weight: bold; color: #6C63FF; text-align: center; background: #f1f5f9; padding: 15px; border-radius: 12px; border: 2px dashed #cbd5e1; }
 
@@ -113,7 +110,7 @@
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (學習足跡版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (影音出題版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <div style="display:flex; gap:10px; margin-top: 10px;">
@@ -135,15 +132,18 @@
             <option value="English">English</option>
         </select>
 
-        <label class="setting-label">📎 上傳參考資料 (可選多個檔案):</label>
+        <label class="setting-label">🎬 從 YouTube 影片出題 (YouTube URL):</label>
+        <input type="text" id="youtubeUrl" placeholder="貼上網址 (例如：https://youtu.be/...)">
+        <div style="font-size: 14px; color: #64748b; margin-top: -8px; margin-bottom: 16px;">貼上影片網址，讓 AI 幫你從影片抓重點出題！</div>
+
+        <label class="setting-label">📎 上傳參考資料 (可選多個圖片/PDF):</label>
         <div class="file-upload-wrapper">
             <input type="file" id="fileInput" accept="image/jpeg, image/png, image/webp, application/pdf" multiple onchange="updateFileList()">
-            <div style="font-size: 14px; color: #64748b; margin-top: 8px;">支援 JPG, PNG 或 PDF。可以一次選多個檔案。</div>
             <div id="fileList"></div>
         </div>
 
         <label class="setting-label">🎯 出題綜合指令 (Topic & Instructions):</label>
-        <textarea id="promptText" placeholder="例如：請綜合上傳的講義，幫我出 5 題觀念題..."></textarea>
+        <textarea id="promptText" placeholder="例如：請綜合上傳的影片和講義，幫我出 5 題觀念題..."></textarea>
         
         <button onclick="generateQuiz()" id="genBtn">🚀 1. 綜合產生考卷 Generate Questions</button>
         <p id="loading">✨ AI 正在消化大量資料中... AI is processing...</p>
@@ -201,7 +201,6 @@
         <div style="margin-top: 15px; font-size: 40px; animation: spin 2s linear infinite;">⏳</div>
     </div>
 </div>
-<style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
 
 <script>
     let currentQuizData = [];
@@ -291,24 +290,34 @@
         }
     }
 
+    // 🚀【升級核心】：整合 YouTube 網址到 Prompt
     async function generateQuiz() {
         const apiKey = document.getElementById('apiKey').value.trim();
         let prompt = document.getElementById('promptText').value.trim();
         const lang = document.getElementById('langSelect').value;
         const fileInput = document.getElementById('fileInput');
+        const ytUrl = document.getElementById('youtubeUrl').value.trim();
         
-        if (!apiKey || (!prompt && fileInput.files.length === 0)) { alert("請輸入 API Key，並且提供指令或檔案！"); return; }
+        if (!apiKey || (!prompt && fileInput.files.length === 0 && !ytUrl)) { 
+            alert("請輸入 API Key，並且提供指令、檔案或 YouTube 網址喔！"); return; 
+        }
         
         localStorage.setItem('geminiApiKey', apiKey); localStorage.setItem('quizLanguage', lang);
         document.getElementById('genBtn').disabled = true; document.getElementById('loading').style.display = 'block';
         document.getElementById('previewZone').style.display = 'none'; document.getElementById('qrZone').style.display = 'none';
 
-        const sysPrompt = `You are an expert educational assistant. Create a quiz. MUST output strictly as a JSON array of objects with keys: "question" and "answer". Output language MUST be exactly: ${lang}. DO NOT wrap in markdown like \`\`\`json. Return ONLY the pure JSON array.`;
-        let apiParts = [{ text: sysPrompt + "\nUser Instructions: " + prompt }];
+        // 整合 YouTube 提示
+        let finalPrompt = prompt;
+        if (ytUrl) {
+            finalPrompt += `\n\n[Important: Please base the questions primarily on the content from this YouTube video: ${ytUrl}]`;
+        }
+
+        const sysPrompt = `You are an expert educational assistant. Create a quiz based on user instructions, files, or provided links. MUST output strictly as a JSON array of objects with keys: "question" and "answer". Output language MUST be exactly: ${lang}. DO NOT wrap in markdown like \`\`\`json. Return ONLY the pure JSON array.`;
+        let apiParts = [{ text: sysPrompt + "\nUser Instructions: " + finalPrompt }];
         
         try {
             if (fileInput.files.length > 0) {
-                document.getElementById('loading').innerText = `✨ 正在讀取 ${fileInput.files.length} 個檔案與綜合思考中...`;
+                document.getElementById('loading').innerText = `✨ 正在讀取檔案與綜合思考中...`;
                 for (let i = 0; i < fileInput.files.length; i++) {
                     const fileData = await getFileBase64(fileInput.files[i]);
                     apiParts.push({ inline_data: { mime_type: fileData.mime_type, data: fileData.data } });
@@ -326,7 +335,10 @@
             currentQuizData = JSON.parse(text);
 
             currentQuizId = "quiz_" + Date.now().toString();
-            let generatedTitle = prompt ? prompt.substring(0, 20) + "..." : currentQuizData[0].question.substring(0, 20) + "...";
+            // 自動命名標題優化
+            let rawTitle = prompt ? prompt : (ytUrl ? "YouTube 影片測驗" : currentQuizData[0].question);
+            let generatedTitle = rawTitle.substring(0, 20) + (rawTitle.length > 20 ? "..." : "");
+            
             const langPrefix = lang.includes('中文') ? '[TW]' : '[EN]';
             saveQuizToLibrary(currentQuizId, `${langPrefix} ${generatedTitle}`, currentQuizData);
 
@@ -341,9 +353,9 @@
     function startQuizDirectly() { renderQuiz(); }
 
     function generateQRCode() {
-        let generatedTitle = document.getElementById('promptText').value.trim();
-        generatedTitle = generatedTitle ? generatedTitle.substring(0, 20) + "..." : "從手機傳送的測驗";
         const langPrefix = document.getElementById('langSelect').value.includes('中文') ? '[TW]' : '[EN]';
+        let rawTitle = document.getElementById('promptText').value.trim() || document.getElementById('youtubeUrl').value.trim() || "從手機傳送的測驗";
+        let generatedTitle = rawTitle.substring(0, 20) + (rawTitle.length > 20 ? "..." : "");
         
         const payload = { title: `${langPrefix} ${generatedTitle}`, data: currentQuizData };
         const jsonStr = JSON.stringify(payload);
@@ -428,7 +440,6 @@
         status.style.display = 'block';
         status.innerText = `🚀 AI 老師正在光速批改全卷中... Please wait...`;
 
-        // 用來打包這份考卷所有細節的陣列，準備存入歷史紀錄
         let attemptDetails = [];
 
         const gradePromises = currentQuizData.map(async (qData, i) => {
@@ -436,7 +447,7 @@
             const textInputVal = document.getElementById(`textInput_${i}`).value.trim();
             let requestBody = { contents: [{ parts: [] }] };
             let promptBase = "";
-            let savedImageBase64 = null; // 用來存檔的圖片
+            let savedImageBase64 = null; 
 
             if (textInputVal !== "") {
                 promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Student typed: "${textInputVal}". Does it mean the same? Ignore minor typos. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
@@ -451,10 +462,9 @@
                 const tempCanvas = document.createElement('canvas'); tempCanvas.width = canvasEl.width; tempCanvas.height = canvasEl.height;
                 const tempCtx = tempCanvas.getContext('2d'); tempCtx.fillStyle = '#ffffff'; tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height); tempCtx.drawImage(canvasEl, 0, 0);
                 
-                // 【核心壓縮技術】：品質調為 0.4，大幅縮減歷史紀錄的儲存空間
                 const fullBase64 = tempCanvas.toDataURL("image/jpeg", 0.4);
                 const img = fullBase64.split(',')[1];
-                savedImageBase64 = fullBase64; // 留給存檔用
+                savedImageBase64 = fullBase64; 
 
                 promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Does this handwritten image match? Ignore bad handwriting. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
                 requestBody.contents[0].parts.push({ text: promptBase }); requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: img } });
@@ -481,37 +491,27 @@
             if (res.isBlank) { 
                 finalMsgHtml = `❌ 哎呀，這題忘了寫喔！ You left this blank!<br><b style="color:#b91c1c;">標準答案 Ans: ${res.ans}</b>`; 
                 f.className='feedback wrong'; 
-            } 
-            else if (res.isError) { 
+            } else if (res.isError) { 
                 finalMsgHtml = `⚠️ 閱卷連線不穩定，請家長幫忙看一下！<br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; 
                 f.className='feedback wrong'; 
-            } 
-            else if (res.correct) { 
+            } else if (res.correct) { 
                 finalMsgHtml = `⭕ 答對了！ Correct!<br><span style="font-size:16px; color:#15803d;">老師說: ${res.msg}</span>`; 
                 f.className='feedback correct'; 
                 score++; 
-            } 
-            else { 
+            } else { 
                 finalMsgHtml = `❌ 不對喔！ Let's try again!<br><span style="font-size:16px; color:#b91c1c;">老師說: ${res.msg}</span><br><b style="color:#7f1d1d; margin-top:8px; display:block;">標準答案 Ans: ${res.ans}</b>`; 
                 f.className='feedback wrong'; 
             }
             f.innerHTML = finalMsgHtml;
 
-            // 存入詳情陣列
             attemptDetails.push({
-                question: res.question,
-                correctAnswer: res.ans,
-                studentText: res.studentText,
-                studentImage: res.studentImg,
-                isCorrect: res.correct && !res.isBlank && !res.isError,
-                feedbackHtml: finalMsgHtml
+                question: res.question, correctAnswer: res.ans, studentText: res.studentText, studentImage: res.studentImg,
+                isCorrect: res.correct && !res.isBlank && !res.isError, feedbackHtml: finalMsgHtml
             });
         });
 
         status.innerText = `🎉 批改完成！總得分： ${score} / ${currentQuizData.length}`;
         gradeBtn.style.display = 'none';
-        
-        // 儲存帶有「作答詳情」的紀錄
         saveAttemptRecordWithDetails(currentQuizId, score, currentQuizData.length, attemptDetails);
     }
 
@@ -520,16 +520,11 @@
         let targetQuiz = library.find(q => q.id === quizId);
         if (targetQuiz) {
             const opts = { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
-            targetQuiz.attempts.unshift({ 
-                date: new Date().toLocaleString(undefined, opts), 
-                score: `${score} / ${total}`,
-                details: details // 將作答快照存起來
-            });
+            targetQuiz.attempts.unshift({ date: new Date().toLocaleString(undefined, opts), score: `${score} / ${total}`, details: details });
             localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
         }
     }
 
-    // 🚀【新功能】：渲染歷史作答詳情
     function showAttemptDetails(quizId, attemptIndex) {
         let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
         let targetQuiz = library.find(q => q.id === quizId);
@@ -542,18 +537,11 @@
         attemptData.details.forEach((item, i) => {
             const card = document.createElement('div');
             card.className = 'question-card';
-            
-            // 判斷小朋友是用打字還是畫圖
             let studentAnsHtml = '';
-            if (item.studentText) {
-                studentAnsHtml = `<div class="review-text-ans">${item.studentText}</div>`;
-            } else if (item.studentImage) {
-                studentAnsHtml = `<img src="${item.studentImage}" class="review-img" alt="Student's drawing">`;
-            } else {
-                studentAnsHtml = `<div class="review-text-ans" style="color:#94a3b8; border-style:dashed;">(空白未作答 Blank)</div>`;
-            }
+            if (item.studentText) { studentAnsHtml = `<div class="review-text-ans">${item.studentText}</div>`; } 
+            else if (item.studentImage) { studentAnsHtml = `<img src="${item.studentImage}" class="review-img" alt="Student's drawing">`; } 
+            else { studentAnsHtml = `<div class="review-text-ans" style="color:#94a3b8; border-style:dashed;">(空白未作答 Blank)</div>`; }
 
-            // 直接套用當初存下來的評語 HTML 與樣式
             const feedbackClass = item.isCorrect ? 'correct' : 'wrong';
 
             card.innerHTML = `
