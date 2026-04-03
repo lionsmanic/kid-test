@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>神奇括號變身遊戲</title>
+    <title>神奇括號變身遊戲 (手寫版)</title>
     <style>
         :root {
             --primary-color: #4CAF50;
@@ -18,6 +18,8 @@
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
+            /* 防止下拉更新干擾手寫 */
+            overscroll-behavior-y: none; 
         }
         .container {
             max-width: 800px;
@@ -50,15 +52,14 @@
             border-radius: 8px;
             font-size: 18px;
             cursor: pointer;
-            width: 100%;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             transition: 0.2s;
         }
         button:active { transform: scale(0.98); }
-        button:disabled { background-color: #9e9e9e; cursor: not-allowed; }
+        .full-btn { width: 100%; margin-top: 10px; }
         
-        /* iPad 作答區樣式 */
+        /* 手寫區樣式 */
         .question-card {
             background: white;
             padding: 20px;
@@ -67,26 +68,52 @@
             border: 2px solid #ffe0b2;
             font-size: 24px;
         }
-        .question-text { font-weight: bold; margin-bottom: 15px; }
-        .answer-input {
+        .question-text { font-weight: bold; margin-bottom: 15px; font-size: 26px; }
+        
+        .canvas-container {
+            border: 3px dashed #bdbdbd;
+            border-radius: 10px;
+            background-color: #fafafa;
+            position: relative;
+            margin-bottom: 10px;
+        }
+        canvas {
             width: 100%;
-            padding: 15px;
-            font-size: 22px;
-            border: 2px solid #ccc;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-family: monospace;
+            height: 180px; /* 給小朋友寫大字的空間 */
+            display: block;
+            touch-action: none; /* 防止手寫時畫面跟著滑動 */
+            border-radius: 10px;
+            cursor: crosshair;
         }
-        .feedback {
+        
+        .tools {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .tool-btn {
+            flex: 1;
+            padding: 10px;
             font-size: 18px;
-            margin-top: 10px;
-            font-weight: bold;
-            display: none;
+            background-color: #e0e0e0;
+            color: #333;
+            border-radius: 8px;
         }
-        .correct { border-color: #4CAF50; background-color: #e8f5e9; }
-        .incorrect { border-color: #f44336; background-color: #ffebee; }
-        .correct-text { color: #4CAF50; }
-        .incorrect-text { color: #f44336; }
+        .tool-btn.active { background-color: #ffb74d; color: white; border: 2px solid #f57c00; }
+        .clear-btn { background-color: #ef5350; color: white; }
+        
+        .feedback {
+            font-size: 24px;
+            margin-top: 15px;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 2px solid #4CAF50;
+            display: none;
+            text-align: center;
+        }
         
         #loading { text-align: center; font-size: 18px; color: #ff9800; display: none; font-weight: bold;}
     </style>
@@ -96,33 +123,31 @@
 <div class="container">
     <div id="parentZone" class="section">
         <h2>🛠️ 家長準備區</h2>
-        <label>1. 輸入 Gemini API Key (會自動記憶)</label>
+        <label>1. 輸入 Gemini API Key</label>
         <input type="password" id="apiKey" placeholder="請貼上您的 API Key...">
         
         <label>2. 貼上題目 或 給 AI 的指令</label>
         <textarea id="promptText" placeholder="例如：請幫我出 5 道 A - B + C 轉成 A + (-B) + C 的題目..."></textarea>
         
-        <button id="generateBtn" onclick="generateQuiz()">產生魔法考卷 ✨</button>
-        <p id="loading">AI 正在施展魔法中，請稍候...</p>
+        <button id="generateBtn" class="full-btn" onclick="generateQuiz()">產生手寫考卷 ✨</button>
+        <p id="loading">AI 正在準備畫布，請稍候...</p>
     </div>
 
     <div id="studentZone" class="section student-section">
-        <h1>⭐ Alyssa 的神奇變身任務 ⭐</h1>
+        <h1>⭐ 神奇變身手寫任務 ⭐</h1>
         <div id="quizContainer"></div>
-        <button onclick="checkAnswers()" style="background-color: #ff9800; margin-top: 20px;">完成！請家長批改 📝</button>
-        <button onclick="resetQuiz()" style="background-color: #757575; margin-top: 10px;">重新出題</button>
+        <button class="full-btn" onclick="checkAnswers()" style="background-color: #ff9800; margin-top: 20px; font-size: 22px;">完成！請家長批改 📝</button>
+        <button class="full-btn" onclick="resetQuiz()" style="background-color: #757575; margin-top: 10px;">重新出題</button>
     </div>
 </div>
 
 <script>
     let currentQuizData = [];
+    let canvases = []; // 儲存畫布資訊
 
-    // 頁面載入時讀取記憶的 API Key
     window.onload = function() {
         const savedKey = localStorage.getItem('geminiApiKey');
-        if (savedKey) {
-            document.getElementById('apiKey').value = savedKey;
-        }
+        if (savedKey) document.getElementById('apiKey').value = savedKey;
     };
 
     async function generateQuiz() {
@@ -132,40 +157,31 @@
         if (!apiKey) { alert("請輸入 API Key！"); return; }
         if (!promptText) { alert("請輸入題目或指令！"); return; }
 
-        // 儲存 API Key
         localStorage.setItem('geminiApiKey', apiKey);
-
         document.getElementById('generateBtn').disabled = true;
         document.getElementById('loading').style.display = 'block';
 
         const systemPrompt = `
         你是一個協助產生互動數學考卷的 AI 助手。
-        請閱讀使用者的輸入（可能是直接貼上的題目，也可能是一句話要求出題）。
-        你的任務是提取或生成題目，並統一輸出成嚴格的 JSON 陣列格式。
-        考卷主題是將 A - B + C 改寫成 A + (-B) + C。
+        請提取或生成題目，統一輸出成 JSON 陣列格式。主題是將 A - B + C 改寫成 A + (-B) + C。
         輸出格式範例：
         [
-          {"question": "14 - 6 + 5 =", "answer": "14+(-6)+5"},
-          {"question": "20 - 8 - 2 =", "answer": "20+(-8)+(-2)"}
+          {"question": "14 - 6 + 5 =", "answer": "14 + (-6) + 5"},
+          {"question": "20 - 8 - 2 =", "answer": "20 + (-8) + (-2)"}
         ]
-        注意：answer 欄位內的字串請去除所有空白，方便程式比對答案。
-        不要輸出任何 JSON 以外的文字（不要用 markdown 標記如 \`\`\`json ）。`;
+        請勿輸出 markdown 標記 (如 \`\`\`json)，只需輸出純 JSON 陣列。確保 answer 排版有適當空格易於閱讀。`;
 
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: systemPrompt + "\n使用者輸入：" + promptText }] }]
-                })
+                body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n使用者輸入：" + promptText }] }] })
             });
 
-            if (!response.ok) throw new Error("API 請求失敗，請檢查 API Key 是否正確。");
+            if (!response.ok) throw new Error("API 請求失敗，請檢查 API Key。");
 
             const data = await response.json();
             let aiText = data.candidates[0].content.parts[0].text;
-            
-            // 清理可能出現的 markdown 標籤
             aiText = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
             
             currentQuizData = JSON.parse(aiText);
@@ -173,7 +189,6 @@
 
         } catch (error) {
             alert("發生錯誤：" + error.message);
-            console.error(error);
         } finally {
             document.getElementById('generateBtn').disabled = false;
             document.getElementById('loading').style.display = 'none';
@@ -186,46 +201,139 @@
         
         const container = document.getElementById('quizContainer');
         container.innerHTML = '';
+        canvases = [];
 
         currentQuizData.forEach((q, index) => {
             const card = document.createElement('div');
             card.className = 'question-card';
             card.innerHTML = `
-                <div class="question-text">第 ${index + 1} 題： ${q.question}</div>
-                <input type="text" class="answer-input" id="ans_${index}" placeholder="輸入改寫後的算式..." autocomplete="off">
-                <div class="feedback" id="feedback_${index}"></div>
+                <div class="question-text">第 ${index + 1} 題：<br>${q.question}</div>
+                
+                <div class="tools">
+                    <button class="tool-btn active" id="pen_${index}" onclick="setTool(${index}, 'pen')">✏️ 畫筆</button>
+                    <button class="tool-btn" id="eraser_${index}" onclick="setTool(${index}, 'eraser')">🧽 橡皮擦</button>
+                    <button class="tool-btn clear-btn" onclick="clearCanvas(${index})">🗑️ 清空</button>
+                </div>
+                
+                <div class="canvas-container">
+                    <canvas id="canvas_${index}"></canvas>
+                </div>
+                
+                <div class="feedback" id="feedback_${index}">解答： ${q.answer}</div>
             `;
             container.appendChild(card);
+            initCanvas(index);
         });
     }
 
+    function initCanvas(index) {
+        const canvas = document.getElementById(`canvas_${index}`);
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        
+        // 解決高解析度模糊問題
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * (window.devicePixelRatio || 1);
+        canvas.height = 180 * (window.devicePixelRatio || 1);
+        ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+
+        // 設定初始筆刷樣式
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#000000';
+
+        let isDrawing = false;
+        let lastX = 0; let lastY = 0;
+        let currentTool = 'pen';
+
+        canvases[index] = { canvas, ctx, tool: currentTool };
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            // 支援滑鼠與觸控 (Apple Pencil 也是觸控事件)
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function startDrawing(e) {
+            e.preventDefault(); // 防止滾動
+            isDrawing = true;
+            const pos = getPos(e);
+            lastX = pos.x; lastY = pos.y;
+            
+            // 點一下也能畫出點
+            ctx.beginPath();
+            ctx.arc(lastX, lastY, ctx.lineWidth / 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            
+            lastX = pos.x; lastY = pos.y;
+        }
+
+        function stopDrawing() { isDrawing = false; }
+
+        // 滑鼠事件
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        // 觸控事件 (iPad 核心)
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+    }
+
+    function setTool(index, tool) {
+        const ctx = canvases[index].ctx;
+        canvases[index].tool = tool;
+        
+        const penBtn = document.getElementById(`pen_${index}`);
+        const eraserBtn = document.getElementById(`eraser_${index}`);
+        
+        if (tool === 'pen') {
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.lineWidth = 4;
+            penBtn.classList.add('active');
+            eraserBtn.classList.remove('active');
+        } else if (tool === 'eraser') {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.lineWidth = 25; // 橡皮擦範圍大一點比較好擦
+            eraserBtn.classList.add('active');
+            penBtn.classList.remove('active');
+        }
+    }
+
+    function clearCanvas(index) {
+        const { canvas, ctx } = canvases[index];
+        // 切換回覆寫模式以清空畫布，然後切回原來的模式
+        const prevMode = ctx.globalCompositeOperation;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.globalCompositeOperation = prevMode;
+    }
+
     function checkAnswers() {
+        // 家長按下批改後，直接在畫布下方顯示所有正確解答
         currentQuizData.forEach((q, index) => {
-            const inputElement = document.getElementById(`ans_${index}`);
             const feedbackElement = document.getElementById(`feedback_${index}`);
-            
-            // 處理學生輸入，去除所有空白，並將全形括號或加減號轉半形，提升容錯率
-            let studentAns = inputElement.value
-                .replace(/\s+/g, '')
-                .replace(/（/g, '(').replace(/）/g, ')')
-                .replace(/＋/g, '+').replace(/－/g, '-');
-            
-            const correctAns = q.answer.replace(/\s+/g, '');
-
-            inputElement.classList.remove('correct', 'incorrect');
             feedbackElement.style.display = 'block';
-
-            if (studentAns === correctAns) {
-                inputElement.classList.add('correct');
-                feedbackElement.className = 'feedback correct-text';
-                feedbackElement.innerText = '⭕ 答對了！太厲害了！';
-            } else {
-                inputElement.classList.add('incorrect');
-                feedbackElement.className = 'feedback incorrect-text';
-                feedbackElement.innerText = `❌ 哎呀，再檢查一下！正確答案是： ${q.answer}`;
-            }
         });
-        window.scrollTo(0, 0);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function resetQuiz() {
