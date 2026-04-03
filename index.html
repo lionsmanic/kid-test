@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Magic Bracket Quest</title>
+    <title>AI Smart Quiz Hub</title>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         :root { --primary: #4CAF50; --bg: #f4f7f6; --text: #333; }
@@ -14,11 +14,12 @@
         .student-section { background: #fff3e0; display: none; }
         .history-section { background: #e3f2fd; display: none; }
         
-        input[type="password"], input[type="text"], textarea { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        input[type="password"], input[type="text"], textarea, select { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
         textarea { height: 100px; }
         
         button { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.2s; }
         button:active { transform: scale(0.98); }
+        button:disabled { background-color: #9e9e9e; cursor: not-allowed; }
         .qr-btn { background: #9C27B0; }
         .scan-btn { background: #FF9800; }
         .history-btn { background: #2196F3; }
@@ -33,7 +34,7 @@
         
         .input-group { background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 15px; }
         .input-group h4 { margin: 0 0 10px 0; color: #555; }
-        .text-ans-input { font-family: monospace; font-size: 20px; text-align: center; border: 2px solid #64b5f6 !important; }
+        .text-ans-input { font-size: 20px; border: 2px solid #64b5f6 !important; }
         
         .canvas-container { border: 2px dashed #bbb; background: #fff; margin: 10px 0; border-radius: 8px; }
         canvas { width: 100%; height: 160px; display: block; touch-action: none; cursor: crosshair; }
@@ -43,23 +44,26 @@
         .tool-btn.active { background: #ffb74d; color: #fff; border-color: #f57c00; }
         .clear-btn { background: #ef5350; color: #fff; }
         
-        .feedback { padding: 15px; margin-top: 15px; border-radius: 8px; display: none; font-weight: bold; text-align: center; font-size: 18px; }
+        .feedback { padding: 15px; margin-top: 15px; border-radius: 8px; display: none; font-weight: bold; text-align: center; font-size: 18px; line-height: 1.4;}
         .correct { background: #e8f5e9; color: #2e7d32; border: 2px solid #4CAF50; }
         .wrong { background: #ffebee; color: #c62828; border: 2px solid #f44336; }
         
         #loading, #gradingStatus { text-align: center; font-size: 18px; color: #ff9800; display: none; font-weight: bold; }
         .history-item { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid #2196F3; display: flex; justify-content: space-between; align-items: center; }
         .history-score { font-size: 24px; font-weight: bold; color: #E91E63; }
+        
+        /* 標籤小優化 */
+        .setting-label { font-weight: bold; color: #555; display: block; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>🛠️ Dashboard</h2>
+        <h2>🛠️ 家長準備區 Dashboard</h2>
         <input type="password" id="apiKey" placeholder="Enter Gemini API Key...">
         
-        <div style="display:flex; gap:10px; margin-top: 20px;">
+        <div style="display:flex; gap:10px; margin-top: 10px;">
             <button class="scan-btn" onclick="startScanner()">📷 Scan QR to Load Quiz</button>
         </div>
         
@@ -68,43 +72,51 @@
             <button onclick="stopScanner()" style="background: #757575; border-radius: 0;">❌ Cancel Scan</button>
         </div>
 
-        <hr style="border: 1px solid #c8e6c9; margin: 25px 0;">
+        <hr style="border: 1px dashed #c8e6c9; margin: 25px 0;">
         
-        <h3 style="margin-bottom: 5px;">Create a New Quiz</h3>
-        <textarea id="promptText" placeholder="e.g. Generate 5 math questions converting A-B+C to A+(-B)+C..."></textarea>
+        <h3>📝 建立新考卷 Create a New Quiz</h3>
         
-        <button onclick="generateQuiz()">✨ 1. Generate Questions</button>
-        <p id="loading">AI is thinking...</p>
+        <label class="setting-label">🌐 選擇輸出語言 (Language):</label>
+        <select id="langSelect">
+            <option value="Traditional Chinese (繁體中文)">繁體中文 (Traditional Chinese)</option>
+            <option value="English">English</option>
+        </select>
+
+        <label class="setting-label">🎯 考卷主題與指令 (Topic & Instructions):</label>
+        <textarea id="promptText" placeholder="例如：請幫我出 3 題關於太陽系行星的自然科學題... \n e.g. Generate 3 science questions about planets..."></textarea>
+        
+        <button onclick="generateQuiz()" id="genBtn">✨ 1. 生成題目 Generate Questions</button>
+        <p id="loading">AI 正在努力思考中... AI is thinking...</p>
 
         <div id="previewZone" style="display:none; margin-top:20px; background:#fff; padding:15px; border-radius:8px; border: 1px solid #ddd;">
-            <h3 style="margin-top:0;">📋 Quiz Preview:</h3>
+            <h3 style="margin-top:0;">📋 題目預覽 Quiz Preview:</h3>
             <div id="previewList" style="font-size:16px; color:#555; margin-bottom: 15px;"></div>
             
-            <button onclick="startQuizDirectly()" style="background: #4CAF50;">📝 2. Start Quiz on this Device</button>
-            <button class="qr-btn" onclick="generateQRCode()">📱 2. Create QR Code for iPad</button>
+            <button onclick="startQuizDirectly()" style="background: #4CAF50;">📝 2. 直接在此裝置開始作答</button>
+            <button class="qr-btn" onclick="generateQRCode()">📱 2. 產生 iPad 傳送條碼 QR Code</button>
         </div>
 
         <div id="qrZone">
-            <p style="font-weight:bold; color:#7b1fa2; margin-top:0;">Scan this with the iPad's built-in scanner!</p>
+            <p style="font-weight:bold; color:#7b1fa2; margin-top:0;">請用小朋友裝置的相機掃描：</p>
             <img id="qrImage" src="">
         </div>
         
-        <button class="history-btn" onclick="showHistory()" style="margin-top:30px;">📁 View Quiz History</button>
+        <button class="history-btn" onclick="showHistory()" style="margin-top:30px;">📁 查看歷史考卷紀錄 View History</button>
     </div>
 
     <div id="studentZone" class="section student-section">
-        <h1>⭐ Mission: Magic Brackets ⭐</h1>
+        <h1 id="quizTitle">⭐ 知識挑戰 Mission Start ⭐</h1>
         <div id="quizContainer"></div>
-        <button id="gradeBtn" onclick="gradeWithAI()" style="background:#E91E63; font-size:22px; padding: 20px;">🤖 Finish & Grade!</button>
-        <p id="gradingStatus">AI is checking your answers...</p>
-        <button onclick="location.href=location.pathname" style="background:#757575; margin-top:15px;">🔙 Back to Dashboard</button>
+        <button id="gradeBtn" onclick="gradeWithAI()" style="background:#E91E63; font-size:22px; padding: 20px;">🤖 寫完了！請 AI 老師批改</button>
+        <p id="gradingStatus">AI 老師正在閱卷中...</p>
+        <button onclick="location.href=location.pathname" style="background:#757575; margin-top:15px;">🔙 回首頁 Back</button>
     </div>
 
     <div id="historyZone" class="section history-section">
-        <h2>📁 Quiz History</h2>
+        <h2>📁 歷史考卷紀錄 Quiz History</h2>
         <div id="historyContainer"></div>
-        <button onclick="location.href=location.pathname" style="background:#757575;">🔙 Back to Dashboard</button>
-        <button onclick="clearHistory()" style="background:#ef5350; margin-top:10px;">🗑️ Clear History</button>
+        <button onclick="location.href=location.pathname" style="background:#757575;">🔙 回首頁 Back</button>
+        <button onclick="clearHistory()" style="background:#ef5350; margin-top:10px;">🗑️ 清空紀錄 Clear History</button>
     </div>
 </div>
 
@@ -115,9 +127,10 @@
 
     window.onload = function() {
         const savedKey = localStorage.getItem('geminiApiKey');
+        const savedLang = localStorage.getItem('quizLanguage');
         if (savedKey) document.getElementById('apiKey').value = savedKey;
+        if (savedLang) document.getElementById('langSelect').value = savedLang;
 
-        // Auto-load quiz if URL contains data payload
         const urlParams = new URLSearchParams(window.location.search);
         const dataParam = urlParams.get('d');
         if (dataParam) {
@@ -128,99 +141,97 @@
         }
     };
 
-    // --- Built-in QR Scanner Logic ---
     function startScanner() {
         document.getElementById('scanner-container').style.display = 'block';
-        html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
-        
+        html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
         html5QrcodeScanner.render(onScanSuccess, onScanFailure);
     }
 
     function onScanSuccess(decodedText, decodedResult) {
-        // Stop scanning
         stopScanner();
-        // Check if the decoded text is a URL belonging to this app
         try {
             const url = new URL(decodedText);
             const dataParam = url.searchParams.get('d');
             if (dataParam) {
                 currentQuizData = JSON.parse(decodeURIComponent(escape(window.atob(dataParam))));
                 renderQuiz();
-            } else {
-                alert("Invalid QR Code for this app.");
-            }
-        } catch(e) {
-            alert("Could not process this QR Code.");
-        }
+            } else { alert("這不是有效的考卷 QR Code！"); }
+        } catch(e) { alert("無效的條碼格式。"); }
     }
 
-    function onScanFailure(error) {
-        // Handle scan failure silently
-    }
-
+    function onScanFailure(error) { /* Silent ignore */ }
     function stopScanner() {
-        if(html5QrcodeScanner) {
-            html5QrcodeScanner.clear();
-        }
+        if(html5QrcodeScanner) html5QrcodeScanner.clear();
         document.getElementById('scanner-container').style.display = 'none';
     }
 
-
-    // --- Generate Quiz Logic ---
     async function generateQuiz() {
         const apiKey = document.getElementById('apiKey').value.trim();
         const prompt = document.getElementById('promptText').value.trim();
-        if (!apiKey || !prompt) { alert("Please enter API Key and Instructions."); return; }
+        const lang = document.getElementById('langSelect').value;
+        
+        if (!apiKey || !prompt) { alert("請輸入 API Key 和指令喔！"); return; }
         
         localStorage.setItem('geminiApiKey', apiKey);
+        localStorage.setItem('quizLanguage', lang);
+        
+        document.getElementById('genBtn').disabled = true;
         document.getElementById('loading').style.display = 'block';
         document.getElementById('previewZone').style.display = 'none';
         document.getElementById('qrZone').style.display = 'none';
 
-        const sys = `Generate a math quiz. Output strictly as a JSON array. Topic: rewrite A - B + C to A + (-B) + C. Format: [{"question": "14 - 6 + 5 =", "answer": "14 + (-6) + 5"}]. DO NOT wrap in markdown like \`\`\`json.`;
+        // 解除了數學束縛，現在是泛用型的 Prompt
+        const sys = `You are a helpful quiz generator for children. 
+        Generate a quiz based on the user's instructions.
+        You MUST output strictly as a JSON array of objects. 
+        Each object must have exactly two keys: "question" and "answer".
+        The output language MUST be exactly: ${lang}.
+        Format example: [{"question": "What is the capital of France?", "answer": "Paris"}, {"question": "5 + 7 =", "answer": "12"}]
+        DO NOT wrap in markdown like \`\`\`json. Return ONLY the JSON array.`;
 
         try {
             const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: sys + "\nInstruction: " + prompt }] }] })
+                body: JSON.stringify({ contents: [{ parts: [{ text: sys + "\nUser Instructions: " + prompt }] }] })
             });
             const data = await resp.json();
             const text = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
             currentQuizData = JSON.parse(text);
 
-            // Show Preview
-            document.getElementById('previewList').innerHTML = currentQuizData.map((q, i) => `<div><b>Q${i+1}:</b> ${q.question}</div>`).join('');
+            document.getElementById('previewList').innerHTML = currentQuizData.map((q, i) => `<div><b>Q${i+1}:</b> ${q.question}<br><small style="color:#888;">(Ans: ${q.answer})</small></div><br>`).join('');
             document.getElementById('previewZone').style.display = 'block';
-            window.scrollTo(0, document.body.scrollHeight);
-        } catch (e) { alert("Generation failed: " + e.message); }
-        finally { document.getElementById('loading').style.display = 'none'; }
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        } catch (e) { 
+            alert("Generation failed (請檢查連線或縮短題目數量): " + e.message); 
+        } finally { 
+            document.getElementById('loading').style.display = 'none'; 
+            document.getElementById('genBtn').disabled = false;
+        }
     }
 
-    function startQuizDirectly() {
-        renderQuiz();
-    }
+    function startQuizDirectly() { renderQuiz(); }
 
     function generateQRCode() {
         const jsonStr = JSON.stringify(currentQuizData);
         const encodedData = window.btoa(unescape(encodeURIComponent(jsonStr)));
         const shareUrl = window.location.origin + window.location.pathname + "?d=" + encodedData;
         
+        // QR Code 資料量太大時可能無法生成圖片，限制約 10 題內通常沒問題
         const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(shareUrl)}`;
         document.getElementById('qrImage').src = qrApi;
         document.getElementById('qrZone').style.display = 'block';
-        window.scrollTo(0, document.body.scrollHeight);
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 
-
-    // --- Render Quiz Interface ---
     function renderQuiz() {
-        // Clean URL to look nice
         window.history.replaceState({}, document.title, window.location.pathname);
-        
         document.getElementById('parentZone').style.display = 'none';
         document.getElementById('studentZone').style.display = 'block';
+        
+        const lang = localStorage.getItem('quizLanguage') || "English";
+        document.getElementById('quizTitle').innerText = lang.includes('中文') ? '⭐ 知識挑戰 ⭐' : '⭐ Mission Start ⭐';
+
         const container = document.getElementById('quizContainer');
         container.innerHTML = '';
         canvases = [];
@@ -229,19 +240,19 @@
             const card = document.createElement('div');
             card.className = 'question-card';
             card.innerHTML = `
-                <div class="question-text">Question ${i+1}: ${q.question}</div>
+                <div class="question-text">${i+1}. ${q.question}</div>
                 
                 <div class="input-group">
-                    <h4>⌨️ Option A: Type it</h4>
-                    <input type="text" id="textInput_${i}" class="text-ans-input" placeholder="Type answer here..." autocomplete="off">
+                    <h4>⌨️ 鍵盤打字 Type your answer</h4>
+                    <input type="text" id="textInput_${i}" class="text-ans-input" autocomplete="off">
                 </div>
 
                 <div class="input-group">
-                    <h4>✏️ Option B: Draw it</h4>
+                    <h4>✏️ 或是動手畫畫 Or draw it here</h4>
                     <div class="tools">
-                        <button class="tool-btn active" id="pen_${i}" onclick="setTool(${i}, 'pen')">✏️ Pen</button>
-                        <button class="tool-btn" id="eraser_${i}" onclick="setTool(${i}, 'eraser')">🧽 Eraser</button>
-                        <button class="tool-btn clear-btn" onclick="clearCanvas(${i})">🗑️ Clear</button>
+                        <button class="tool-btn active" id="pen_${i}" onclick="setTool(${i}, 'pen')">✏️ 筆 Pen</button>
+                        <button class="tool-btn" id="eraser_${i}" onclick="setTool(${i}, 'eraser')">🧽 橡皮擦 Eraser</button>
+                        <button class="tool-btn clear-btn" onclick="clearCanvas(${i})">🗑️ 清空 Clear</button>
                     </div>
                     <div class="canvas-container"><canvas id="canvas_${i}"></canvas></div>
                 </div>
@@ -251,9 +262,9 @@
             container.appendChild(card);
             initCanvas(i);
         });
+        window.scrollTo(0, 0);
     }
 
-    // --- Canvas Drawing Logic ---
     function initCanvas(index) {
         const canvas = document.getElementById(`canvas_${index}`);
         const ctx = canvas.getContext('2d');
@@ -292,7 +303,6 @@
         c.ctx.fillStyle = "#fff"; c.ctx.fillRect(0,0,c.canvas.width,c.canvas.height);
     }
 
-    // --- Grading Logic (Dual Mode) ---
     async function gradeWithAI() {
         const key = document.getElementById('apiKey').value;
         const status = document.getElementById('gradingStatus');
@@ -302,57 +312,56 @@
         let score = 0;
 
         for (let i = 0; i < currentQuizData.length; i++) {
-            status.innerText = `Checking Question ${i+1}...`;
+            status.innerText = `正在為第 ${i+1} 題閱卷... AI is checking Q${i+1}...`;
             const ans = currentQuizData[i].answer;
             const textInputVal = document.getElementById(`textInput_${i}`).value.trim();
             const f = document.getElementById(`f_${i}`);
-            
             f.style.display = 'block';
 
-            // 1. 如果小朋友有打字，優先以打字的內容來批改 (瞬間完成)
-            if (textInputVal !== "") {
-                const cleanStudentText = textInputVal.replace(/\s+/g, '').replace(/＋/g, '+').replace(/－/g, '-');
-                const cleanCorrectText = ans.replace(/\s+/g, '');
-                
-                if (cleanStudentText === cleanCorrectText) {
-                    f.className='feedback correct'; f.innerText='⭕ Correct! Well done!'; score++;
-                } else {
-                    f.className='feedback wrong'; f.innerHTML=`❌ Not quite!<br><span style="font-size:16px;">You typed: ${textInputVal}</span><br>Answer: ${ans}`;
-                }
-                continue; // 跳過 AI 視覺批改，進入下一題
-            }
+            let requestBody = { contents: [{ parts: [] }] };
+            let promptBase = "";
 
-            // 2. 如果沒有打字，就截取畫布傳給 AI (視覺批改)
-            const img = canvases[i].canvas.toDataURL("image/jpeg", 0.8).split(',')[1];
-            const prompt = `You are a math teacher grading handwritten work. The correct answer is "${ans}". Does the handwritten image match this meaning and format? (Ignore spaces). If canvas is blank, it's false. Return strictly JSON: {"correct": true, "msg": "what you read"}`;
+            // 動態判斷是文字批改還是圖片批改
+            if (textInputVal !== "") {
+                promptBase = `You are a friendly teacher grading a student's quiz. The question was "${currentQuizData[i].question}". The strictly correct answer is "${ans}". The student typed: "${textInputVal}". Does the student's answer mean the same or is it practically correct? (Ignore minor typos, casing, or extra spaces). Return strictly JSON: {"correct": true or false, "msg": "Brief encouraging feedback in the same language as the question."}`;
+                requestBody.contents[0].parts.push({ text: promptBase });
+            } else {
+                const img = canvases[i].canvas.toDataURL("image/jpeg", 0.8).split(',')[1];
+                promptBase = `You are a friendly teacher grading a handwritten answer. The question was "${currentQuizData[i].question}". The correct answer is "${ans}". Does the handwritten image match this answer? (Ignore minor spelling/drawing flaws). If canvas is blank, it's false. Return strictly JSON: {"correct": true or false, "msg": "what you saw and brief feedback in the same language as the question."}`;
+                requestBody.contents[0].parts.push({ text: promptBase });
+                requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: img } });
+            }
 
             try {
                 const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: img } }] }] })
+                    body: JSON.stringify(requestBody)
                 });
                 const d = await resp.json();
                 const res = JSON.parse(d.candidates[0].content.parts[0].text.replace(/```json|```/g, ''));
                 
                 if(res.correct) { 
-                    f.className='feedback correct'; f.innerText='⭕ Correct! Good job!'; score++; 
+                    f.className='feedback correct'; 
+                    f.innerHTML=`⭕ 答對了！ Correct!<br><span style="font-size:16px;">AI 說: ${res.msg}</span>`; 
+                    score++; 
                 } else { 
-                    f.className='feedback wrong'; f.innerHTML=`❌ Let's try again!<br><span style="font-size:16px;">AI read: ${res.msg}</span><br>Correct Answer: ${ans}`; 
+                    f.className='feedback wrong'; 
+                    f.innerHTML=`❌ 不對喔！ Not quite!<br><span style="font-size:16px;">AI 說: ${res.msg}</span><br><b style="color:#d32f2f;">標準答案 Ans: ${ans}</b>`; 
                 }
             } catch(e) { 
-                f.className='feedback wrong'; f.innerHTML=`⚠️ Error checking drawing.<br>Correct Answer: ${ans}`; 
+                f.className='feedback wrong'; 
+                f.innerHTML=`⚠️ 批改發生小錯誤，請家長幫忙看一下！<br><b style="color:#d32f2f;">標準答案 Ans: ${ans}</b>`; 
             }
         }
-        status.innerText = `All done! Score: ${score} / ${currentQuizData.length}`;
-        gradeBtn.style.display = 'none';
+        
+        status.innerText = `批改完成！總得分： ${score} / ${currentQuizData.length}`;
         saveRecord(score, currentQuizData.length);
     }
 
-    // --- History Logic ---
     function saveRecord(s, t) {
         const history = JSON.parse(localStorage.getItem('quizHistory') || '[]');
-        history.unshift({ date: new Date().toLocaleString('en-US'), score: `${s}/${t}` });
+        history.unshift({ date: new Date().toLocaleString(), score: `${s} / ${t}` });
         localStorage.setItem('quizHistory', JSON.stringify(history));
     }
 
@@ -361,12 +370,12 @@
         document.getElementById('historyZone').style.display='block';
         const h = JSON.parse(localStorage.getItem('quizHistory') || '[]');
         document.getElementById('historyContainer').innerHTML = h.length ? 
-            h.map(r => `<div class="history-item"><span><small style="color:#777">Date:</small><br>${r.date}</span><b class="history-score">${r.score}</b></div>`).join('') : 
-            '<p style="text-align:center;">No quiz history yet.</p>';
+            h.map(r => `<div class="history-item"><span><small style="color:#777">測驗時間:</small><br>${r.date}</span><b class="history-score">${r.score}</b></div>`).join('') : 
+            '<p style="text-align:center;">目前還沒有紀錄喔！ No quiz history yet.</p>';
     }
 
     function clearHistory() {
-        if(confirm("Are you sure you want to delete all history?")) {
+        if(confirm("確定要刪除所有紀錄嗎？ Are you sure?")) {
             localStorage.removeItem('quizHistory');
             showHistory();
         }
