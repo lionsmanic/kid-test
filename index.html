@@ -34,7 +34,7 @@
         .card-action-btn { padding: 10px; font-size: 16px; border-radius: 10px; text-align: center; margin-top: 0; box-shadow: none; }
         .card-action-btn:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
         .retake-btn { background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); }
-        .translate-btn { background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); } /* 翻譯按鈕 (紫色) */
+        .translate-btn { background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); }
         .qr-small-btn { background: linear-gradient(135deg, #FF6584 0%, #E91E63 100%); }
         .del-btn { background: #fee2e2; color: #ef4444; }
         .del-btn:hover { background: #fecaca; color: #b91c1c; }
@@ -82,10 +82,14 @@
         #fileList { margin-top: 10px; font-size: 14px; color: #64748b; text-align: left; }
         .file-item { display: inline-block; background: #e2e8f0; padding: 4px 10px; border-radius: 20px; margin: 4px 4px 0 0; }
         
-        /* 彈出式 Modal (給QR Code 和 翻譯狀態使用) */
+        /* 彈出式 Modal */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
         .modal-content { background: #fff; padding: 30px; border-radius: 24px; text-align: center; max-width: 80%; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
         .modal-close { background: #e2e8f0; color: #475569; padding: 10px; margin-top: 20px; border-radius: 12px; font-size: 16px; }
+        
+        /* 編輯標題的按鈕 */
+        .edit-title-icon { cursor: pointer; font-size: 18px; margin-left: 8px; opacity: 0.5; transition: 0.2s; }
+        .edit-title-icon:hover { opacity: 1; transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -300,7 +304,6 @@
 
             currentQuizId = "quiz_" + Date.now().toString();
             let generatedTitle = prompt ? prompt.substring(0, 20) + "..." : currentQuizData[0].question.substring(0, 20) + "...";
-            // 加上語言標記，方便辨識
             const langPrefix = lang.includes('中文') ? '[TW]' : '[EN]';
             saveQuizToLibrary(currentQuizId, `${langPrefix} ${generatedTitle}`, currentQuizData);
 
@@ -335,7 +338,6 @@
         document.getElementById('historyZone').style.display = 'none';
         document.getElementById('studentZone').style.display = 'block';
         
-        // 簡單判斷這份考卷是中文還英文，來顯示標題
         const hasChinese = /[\u4e00-\u9fa5]/.test(currentQuizData[0].question);
         document.getElementById('quizTitle').innerText = hasChinese ? '⭐ 知識挑戰開始 ⭐' : '⭐ Mission Start ⭐';
         
@@ -390,7 +392,6 @@
         const c = canvases[i]; c.ctx.clearRect(0, 0, c.canvas.width, c.canvas.height);
     }
 
-    // 平行光速批改
     async function gradeWithAI() {
         const key = document.getElementById('apiKey').value;
         const status = document.getElementById('gradingStatus');
@@ -460,7 +461,21 @@
         }
     }
 
-    // --- 歷史紀錄區功能 ---
+    // --- 歷史紀錄區功能：標題編輯、翻譯、重考 ---
+    function editQuizTitle(quizId) {
+        let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
+        let targetIndex = library.findIndex(q => q.id === quizId);
+        if (targetIndex !== -1) {
+            let currentTitle = library[targetIndex].title;
+            let newTitle = prompt("請輸入新的考卷名稱 (Enter new title):", currentTitle);
+            if (newTitle !== null && newTitle.trim() !== "") {
+                library[targetIndex].title = newTitle.trim();
+                localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
+                showHistory(); // 重新整理畫面顯示新標題
+            }
+        }
+    }
+
     function startRetake(quizId) {
         let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
         let targetQuiz = library.find(q => q.id === quizId);
@@ -491,7 +506,6 @@
         }
     }
 
-    // 🚀【新核心】：一鍵雙語翻譯
     async function translateQuiz(quizId) {
         const key = document.getElementById('apiKey').value;
         if (!key) { alert("請先在首頁輸入 API Key！"); return; }
@@ -501,21 +515,17 @@
         if (targetIndex === -1) return;
 
         let targetQuiz = library[targetIndex];
-        
-        // 自動偵測目前語言 (以第一題是否有中文字為基準)
         const hasChinese = /[\u4e00-\u9fa5]/.test(targetQuiz.quizData[0].question);
         const targetLanguage = hasChinese ? "English" : "Traditional Chinese (繁體中文)";
-        const statusText = hasChinese ? "Converting quiz to English..." : "正在將考卷翻譯為繁體中文...";
-
-        document.getElementById('translateStatusText').innerText = statusText;
+        
+        document.getElementById('translateStatusText').innerText = hasChinese ? "Converting quiz to English..." : "正在將考卷翻譯為繁體中文...";
         document.getElementById('translateModal').style.display = 'flex';
 
         const sysPrompt = `Translate the following quiz into ${targetLanguage}. Maintain the exact JSON array structure with "question" and "answer" keys. Do NOT wrap in markdown \`\`\`json. Return ONLY pure JSON.`;
         
         try {
             const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ parts: [{ text: sysPrompt }, { text: JSON.stringify(targetQuiz.quizData) }] }] })
             });
             const data = await resp.json();
@@ -524,18 +534,13 @@
             const text = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
             const translatedData = JSON.parse(text);
 
-            // 覆蓋原本的資料並更新標題標籤
             library[targetIndex].quizData = translatedData;
             const newPrefix = hasChinese ? '[EN]' : '[TW]';
             library[targetIndex].title = `${newPrefix} ` + library[targetIndex].title.replace(/^\[(EN|TW)\]\s*/, '');
-
             localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
             showHistory(); 
-        } catch (e) {
-            alert("翻譯失敗 Translation Failed: " + e.message);
-        } finally {
-            document.getElementById('translateModal').style.display = 'none';
-        }
+        } catch (e) { alert("翻譯失敗 Translation Failed: " + e.message); } 
+        finally { document.getElementById('translateModal').style.display = 'none'; }
     }
 
     function showHistory() {
@@ -565,7 +570,10 @@
                 <div class="history-card">
                     <div class="history-header">
                         <div>
-                            <h4 class="history-title">${quiz.title}</h4>
+                            <h4 class="history-title">
+                                ${quiz.title} 
+                                <span class="edit-title-icon" onclick="editQuizTitle('${quiz.id}')" title="修改標題">✏️</span>
+                            </h4>
                             <div class="history-date">建立於: ${quiz.createdAt} | 共 ${quiz.quizData.length} 題</div>
                         </div>
                     </div>
