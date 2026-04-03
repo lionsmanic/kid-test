@@ -60,17 +60,13 @@
         .scan-btn { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
         .history-btn { background: linear-gradient(135deg, #10B981 0%, #059669 100%); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
         .grade-btn { background: linear-gradient(135deg, #EC4899 0%, #BE185D 100%); font-size: 24px; padding: 20px; box-shadow: 0 8px 25px rgba(236, 72, 153, 0.4); }
+        .retake-btn { background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); font-size: 16px; padding: 10px; margin-top: 0; width: auto; display: inline-block; }
         
         #qrZone { text-align: center; margin-top: 20px; display: none; padding: 25px; border: 3px dashed #FF6584; background: #fff0f3; border-radius: 16px;}
         #qrImage { max-width: 200px; margin-top: 15px; border: 8px solid #fff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         #scanner-container { display: none; margin-top: 15px; border: 3px solid #F59E0B; border-radius: 16px; overflow: hidden; background: #fff;}
 
-        .question-card { 
-            background: #ffffff; padding: 25px; margin: 20px 0; 
-            border-radius: 20px; border: none; 
-            box-shadow: 0 6px 15px rgba(0,0,0,0.06); 
-            border-top: 6px solid var(--secondary);
-        }
+        .question-card { background: #ffffff; padding: 25px; margin: 20px 0; border-radius: 20px; border: none; box-shadow: 0 6px 15px rgba(0,0,0,0.06); border-top: 6px solid var(--secondary); }
         .question-text { font-size: 24px; font-weight: 800; margin-bottom: 20px; color: #2D3748; line-height: 1.5; }
         
         .input-group { background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
@@ -78,12 +74,7 @@
         .text-ans-input { font-size: 22px; text-align: center; border: 2px dashed #94a3b8 !important; background: #fff; }
         .text-ans-input:focus { border-style: solid !important; border-color: var(--primary) !important; }
         
-        .canvas-container { 
-            background-color: #ffffff;
-            background-image: repeating-linear-gradient(transparent, transparent 31px, #e2e8f0 31px, #e2e8f0 32px);
-            background-size: 100% 32px; background-position: 0 10px;
-            border: 2px solid #cbd5e1; margin: 10px 0; border-radius: 12px; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
-        }
+        .canvas-container { background-color: #ffffff; background-image: repeating-linear-gradient(transparent, transparent 31px, #e2e8f0 31px, #e2e8f0 32px); background-size: 100% 32px; background-position: 0 10px; border: 2px solid #cbd5e1; margin: 10px 0; border-radius: 12px; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
         canvas { width: 100%; height: 192px; display: block; touch-action: none; cursor: crosshair; }
         
         .tools { display: flex; gap: 10px; margin-bottom: 12px; }
@@ -99,23 +90,32 @@
         .wrong { background: #fef2f2; color: #991b1b; border: 2px solid #ef4444; }
         
         #loading, #gradingStatus { text-align: center; font-size: 20px; color: var(--primary); display: none; font-weight: 800; margin: 20px 0;}
-        .history-item { background: #fff; padding: 20px; border-radius: 16px; margin-bottom: 15px; border-left: 6px solid var(--primary); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .history-score { font-size: 28px; font-weight: 800; color: var(--secondary); }
+        
+        /* 升級版歷史紀錄卡片 */
+        .history-card { background: #fff; padding: 20px; border-radius: 16px; margin-bottom: 20px; border-top: 6px solid #10B981; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .history-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 15px; }
+        .history-title { font-size: 20px; font-weight: 800; color: #2D3748; margin: 0 0 5px 0; }
+        .history-date { font-size: 14px; color: #64748b; }
+        .attempt-list { background: #f8fafc; border-radius: 10px; padding: 15px; }
+        .attempt-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 16px;}
+        .attempt-item:last-child { border-bottom: none; }
+        .attempt-score { font-weight: 800; color: var(--secondary); font-size: 18px; }
         
         .setting-label { font-weight: 800; color: #4a5568; display: block; margin-top: 20px; font-size: 16px; }
         .file-upload-wrapper { background: #fff; padding: 15px; border-radius: 12px; border: 2px dashed #cbd5e1; text-align: center; margin-bottom: 16px; }
         .file-upload-wrapper input[type="file"] { margin: 0; padding: 0; border: none; }
-        
-        /* 檔案列表預覽樣式 */
         #fileList { margin-top: 10px; font-size: 14px; color: #64748b; text-align: left; }
         .file-item { display: inline-block; background: #e2e8f0; padding: 4px 10px; border-radius: 20px; margin: 4px 4px 0 0; }
+        
+        /* 保存成功的提示 */
+        .save-badge { display: inline-block; background: #dcfce7; color: #166534; padding: 5px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-left: 10px; vertical-align: middle; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心</h2>
+        <h2>✨ AI 魔法出題中心 (題庫記憶版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <div style="display:flex; gap:10px; margin-top: 10px;">
@@ -140,18 +140,18 @@
         <label class="setting-label">📎 上傳參考資料 (可選多個檔案):</label>
         <div class="file-upload-wrapper">
             <input type="file" id="fileInput" accept="image/jpeg, image/png, image/webp, application/pdf" multiple onchange="updateFileList()">
-            <div style="font-size: 14px; color: #64748b; margin-top: 8px;">支援 JPG, PNG 或 PDF。可以一次框選多張照片或檔案喔！</div>
+            <div style="font-size: 14px; color: #64748b; margin-top: 8px;">支援 JPG, PNG 或 PDF。可以一次框選多個檔案。</div>
             <div id="fileList"></div>
         </div>
 
-        <label class="setting-label">🎯 出題綜合指令 (Topic & Instructions):</label>
-        <textarea id="promptText" placeholder="例如：請綜合我上傳的 PDF 第一章和這兩張筆記照片，幫我出 5 題觀念混合題..."></textarea>
+        <label class="setting-label">🎯 出題指令 (Topic & Instructions):</label>
+        <textarea id="promptText" placeholder="例如：幫我出 5 題觀念混合題..."></textarea>
         
-        <button onclick="generateQuiz()" id="genBtn">🚀 1. 綜合產生考卷 Generate Questions</button>
-        <p id="loading">✨ AI 正在消化大量資料中... AI is processing...</p>
+        <button onclick="generateQuiz()" id="genBtn">🚀 1. 產生考卷 Generate Questions</button>
+        <p id="loading">✨ AI 正在消化資料中... AI is processing...</p>
 
         <div id="previewZone" style="display:none; margin-top:25px; background:#fff; padding:20px; border-radius:16px; border: 2px solid #e2e8f0;">
-            <h3 style="margin-top:0; color: #4a5568;">📋 考卷預覽 Quiz Preview:</h3>
+            <h3 style="margin-top:0; color: #4a5568;">📋 考卷預覽 Quiz Preview <span class="save-badge">💾 已自動存入題庫</span></h3>
             <div id="previewList" style="font-size:16px; color:#4a5568; margin-bottom: 20px; line-height: 1.6;"></div>
             
             <button onclick="startQuizDirectly()" style="background: var(--primary);">📝 2. 直接在此裝置作答 Start Here</button>
@@ -163,7 +163,7 @@
             <img id="qrImage" src="">
         </div>
         
-        <button class="history-btn" onclick="showHistory()" style="margin-top:35px;">📁 查看歷史考卷紀錄 View History</button>
+        <button class="history-btn" onclick="showHistory()" style="margin-top:35px;">📁 進入歷史題庫區 Library & History</button>
     </div>
 
     <div id="studentZone" class="section student-section">
@@ -175,7 +175,7 @@
     </div>
 
     <div id="historyZone" class="section history-section">
-        <h2>📁 歷史考卷紀錄 Quiz History</h2>
+        <h2>📁 歷史題庫與紀錄 Library & History</h2>
         <div id="historyContainer"></div>
         <button onclick="location.href=location.pathname" style="background:#94a3b8;">🔙 回首頁 Back to Home</button>
         <button onclick="clearHistory()" style="background:#ef4444; margin-top:15px;">🗑️ 清空所有紀錄 Clear All</button>
@@ -184,6 +184,7 @@
 
 <script>
     let currentQuizData = [];
+    let currentQuizId = null; // 用來追蹤目前正在寫的是哪份考卷
     let canvases = [];
     let html5QrcodeScanner = null;
 
@@ -197,13 +198,16 @@
         const dataParam = urlParams.get('d');
         if (dataParam) {
             try {
-                currentQuizData = JSON.parse(decodeURIComponent(escape(window.atob(dataParam))));
+                const payload = JSON.parse(decodeURIComponent(escape(window.atob(dataParam))));
+                currentQuizData = payload.data;
+                // iPad 端掃描後，將題目存入 iPad 本地的題庫
+                currentQuizId = "quiz_" + Date.now().toString(); 
+                saveQuizToLibrary(currentQuizId, payload.title || "從 QR Code 載入的測驗", currentQuizData);
                 renderQuiz();
             } catch (e) { alert("Failed to load quiz data!"); }
         }
     };
 
-    // 顯示使用者選了哪些檔案
     function updateFileList() {
         const fileInput = document.getElementById('fileInput');
         const fileListDiv = document.getElementById('fileList');
@@ -229,7 +233,10 @@
             const url = new URL(decodedText);
             const dataParam = url.searchParams.get('d');
             if (dataParam) {
-                currentQuizData = JSON.parse(decodeURIComponent(escape(window.atob(dataParam))));
+                const payload = JSON.parse(decodeURIComponent(escape(window.atob(dataParam))));
+                currentQuizData = payload.data;
+                currentQuizId = "quiz_" + Date.now().toString(); 
+                saveQuizToLibrary(currentQuizId, payload.title || "從 QR Code 載入的測驗", currentQuizData);
                 renderQuiz();
             } else { alert("這不是有效的考卷 QR Code！"); }
         } catch(e) { alert("無效的條碼格式。"); }
@@ -241,7 +248,6 @@
         document.getElementById('scanner-container').style.display = 'none';
     }
 
-    // 將上傳檔案轉成 Base64 格式
     function getFileBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -254,15 +260,30 @@
         });
     }
 
+    // 核心資料庫功能：儲存整份考卷
+    function saveQuizToLibrary(id, title, data) {
+        let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
+        if (!library.some(q => q.id === id)) {
+            const opts = { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
+            library.unshift({ 
+                id: id, 
+                title: title, 
+                quizData: data, 
+                createdAt: new Date().toLocaleString(undefined, opts), 
+                attempts: [] // 這裡用來放每次重考的分數
+            });
+            localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
+        }
+    }
+
     async function generateQuiz() {
         const apiKey = document.getElementById('apiKey').value.trim();
-        const prompt = document.getElementById('promptText').value.trim();
+        let prompt = document.getElementById('promptText').value.trim();
         const lang = document.getElementById('langSelect').value;
         const fileInput = document.getElementById('fileInput');
         
         if (!apiKey || (!prompt && fileInput.files.length === 0)) { 
-            alert("請輸入 API Key，並且提供文字指令或至少上傳一個檔案喔！"); 
-            return; 
+            alert("請輸入 API Key，並且提供文字指令或至少上傳一個檔案喔！"); return; 
         }
         
         localStorage.setItem('geminiApiKey', apiKey);
@@ -274,23 +295,19 @@
         document.getElementById('qrZone').style.display = 'none';
 
         const sysPrompt = `You are an expert educational assistant for children. 
-        Create a quiz based on the user's instructions AND the provided files (if any). Combine knowledge from all inputs.
+        Create a quiz based on the user's instructions AND files.
         You MUST output strictly as a JSON array of objects. 
-        Each object must have exactly two keys: "question" and "answer".
+        Each object must have two keys: "question" and "answer".
         The output language MUST be exactly: ${lang}.
-        Format example: [{"question": "What is the capital of France?", "answer": "Paris"}, {"question": "5 + 7 =", "answer": "12"}]
         DO NOT wrap in markdown like \`\`\`json. Return ONLY the pure JSON array.`;
 
-        // 建立傳送給 API 的陣列
         let apiParts = [{ text: sysPrompt + "\nUser Instructions: " + prompt }];
         
         try {
-            // 迴圈處理每一個上傳的檔案
             if (fileInput.files.length > 0) {
-                document.getElementById('loading').innerText = `✨ 正在讀取 ${fileInput.files.length} 個檔案與綜合思考中... Processing files...`;
+                document.getElementById('loading').innerText = `✨ 正在讀取 ${fileInput.files.length} 個檔案與綜合思考中...`;
                 for (let i = 0; i < fileInput.files.length; i++) {
-                    const fileObj = fileInput.files[i];
-                    const fileData = await getFileBase64(fileObj);
+                    const fileData = await getFileBase64(fileInput.files[i]);
                     apiParts.push({ inline_data: { mime_type: fileData.mime_type, data: fileData.data } });
                 }
             } else {
@@ -298,8 +315,7 @@
             }
 
             const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ parts: apiParts }] })
             });
             
@@ -309,12 +325,17 @@
             const text = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
             currentQuizData = JSON.parse(text);
 
+            // 產生唯一 ID 並自動儲存至題庫
+            currentQuizId = "quiz_" + Date.now().toString();
+            let generatedTitle = prompt ? prompt.substring(0, 20) + "..." : currentQuizData[0].question.substring(0, 20) + "...";
+            saveQuizToLibrary(currentQuizId, generatedTitle, currentQuizData);
+
             document.getElementById('previewList').innerHTML = currentQuizData.map((q, i) => `<div style="margin-bottom:10px;"><b>Q${i+1}:</b> ${q.question}<br><small style="color:#94a3b8; font-weight:bold;">(Ans: ${q.answer})</small></div>`).join('');
             document.getElementById('previewZone').style.display = 'block';
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             
         } catch (e) { 
-            alert("生成失敗 (可能是上傳的檔案總量太大、或是指令過於模糊): " + e.message); 
+            alert("生成失敗 (可能是上傳的檔案總量太大): " + e.message); 
         } finally { 
             document.getElementById('loading').style.display = 'none'; 
             document.getElementById('genBtn').disabled = false;
@@ -324,7 +345,12 @@
     function startQuizDirectly() { renderQuiz(); }
 
     function generateQRCode() {
-        const jsonStr = JSON.stringify(currentQuizData);
+        // 將 ID 和 Title 包裝進去，讓 iPad 掃描後也能儲存正確的資訊
+        let generatedTitle = document.getElementById('promptText').value.trim();
+        generatedTitle = generatedTitle ? generatedTitle.substring(0, 20) + "..." : "從手機傳送的測驗";
+        
+        const payload = { title: generatedTitle, data: currentQuizData };
+        const jsonStr = JSON.stringify(payload);
         const encodedData = window.btoa(unescape(encodeURIComponent(jsonStr)));
         const shareUrl = window.location.origin + window.location.pathname + "?d=" + encodedData;
         
@@ -334,13 +360,20 @@
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 
+    // 啟動測驗介面
     function renderQuiz() {
         window.history.replaceState({}, document.title, window.location.pathname);
         document.getElementById('parentZone').style.display = 'none';
+        document.getElementById('historyZone').style.display = 'none';
         document.getElementById('studentZone').style.display = 'block';
         
         const lang = localStorage.getItem('quizLanguage') || "English";
         document.getElementById('quizTitle').innerText = lang.includes('中文') ? '⭐ 知識挑戰開始 ⭐' : '⭐ Mission Start ⭐';
+        
+        // 重置按鈕狀態
+        document.getElementById('gradeBtn').style.display = 'block';
+        document.getElementById('gradeBtn').disabled = false;
+        document.getElementById('gradingStatus').style.display = 'none';
 
         const container = document.getElementById('quizContainer');
         container.innerHTML = '';
@@ -351,12 +384,10 @@
             card.className = 'question-card';
             card.innerHTML = `
                 <div class="question-text"><span style="color:#94a3b8; font-size:18px;">Q${i+1}.</span><br>${q.question}</div>
-                
                 <div class="input-group">
                     <h4>⌨️ 鍵盤打字 Type your answer</h4>
                     <input type="text" id="textInput_${i}" class="text-ans-input" autocomplete="off" placeholder="...">
                 </div>
-
                 <div class="input-group" style="background: #fff; border: 2px dashed #e2e8f0;">
                     <h4>✏️ 或是動手畫畫 Or draw it here</h4>
                     <div class="tools">
@@ -366,7 +397,6 @@
                     </div>
                     <div class="canvas-container"><canvas id="canvas_${i}"></canvas></div>
                 </div>
-                
                 <div class="feedback" id="f_${i}"></div>
             `;
             container.appendChild(card);
@@ -379,25 +409,15 @@
         const canvas = document.getElementById(`canvas_${index}`);
         const ctx = canvas.getContext('2d');
         const ratio = window.devicePixelRatio || 1;
-        canvas.width = canvas.offsetWidth * ratio; 
-        canvas.height = 192 * ratio;
-        ctx.scale(ratio, ratio);
-        
+        canvas.width = canvas.offsetWidth * ratio; canvas.height = 192 * ratio; ctx.scale(ratio, ratio);
         ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = 4; ctx.strokeStyle = "#1e293b";
         let drawing = false; let lx, ly;
         canvases[index] = { canvas, ctx, tool: 'pen' };
-
-        const getXY = (e) => {
-            const r = canvas.getBoundingClientRect();
-            const cx = e.touches ? e.touches[0].clientX : e.clientX;
-            const cy = e.touches ? e.touches[0].clientY : e.clientY;
-            return { x: cx - r.left, y: cy - r.top };
-        };
+        const getXY = (e) => { const r = canvas.getBoundingClientRect(); const cx = e.touches ? e.touches[0].clientX : e.clientX; const cy = e.touches ? e.touches[0].clientY : e.clientY; return { x: cx - r.left, y: cy - r.top }; };
         const start = (e) => { e.preventDefault(); drawing = true; const p = getXY(e); lx = p.x; ly = p.y; };
         const move = (e) => { if(!drawing) return; e.preventDefault(); const p = getXY(e); ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(p.x, p.y); ctx.stroke(); lx = p.x; ly = p.y; };
         canvas.addEventListener('touchstart', start, {passive: false}); canvas.addEventListener('touchmove', move, {passive: false}); canvas.addEventListener('touchend', () => drawing=false);
-        canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); canvas.addEventListener('mouseup', () => drawing=false);
-        canvas.addEventListener('mouseout', () => drawing=false);
+        canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); canvas.addEventListener('mouseup', () => drawing=false); canvas.addEventListener('mouseout', () => drawing=false);
     }
 
     function setTool(i, t) {
@@ -432,16 +452,14 @@
             let promptBase = "";
 
             if (textInputVal !== "") {
-                promptBase = `You are a supportive teacher grading a student. Question: "${currentQuizData[i].question}". Correct answer: "${ans}". Student typed: "${textInputVal}". Does it mean the same? Ignore minor typos. Return strictly JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
+                promptBase = `You are a supportive teacher grading. Q: "${currentQuizData[i].question}". Correct ans: "${ans}". Student typed: "${textInputVal}". Does it mean the same? Ignore minor typos. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
                 requestBody.contents[0].parts.push({ text: promptBase });
             } else {
                 const canvasEl = canvases[i].canvas;
                 const ctx = canvases[i].ctx;
                 const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height).data;
                 let isBlank = true;
-                for (let j = 3; j < imgData.length; j += 4) {
-                    if (imgData[j] > 0) { isBlank = false; break; }
-                }
+                for (let j = 3; j < imgData.length; j += 4) { if (imgData[j] > 0) { isBlank = false; break; } }
 
                 if (isBlank) {
                     f.className='feedback wrong'; 
@@ -456,58 +474,115 @@
                 tempCtx.drawImage(canvasEl, 0, 0);
                 const img = tempCanvas.toDataURL("image/jpeg", 0.8).split(',')[1];
 
-                promptBase = `You are a supportive teacher. Question: "${currentQuizData[i].question}". Correct answer: "${ans}". Does this handwritten image match? Ignore bad handwriting. Return strictly JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
+                promptBase = `You are a supportive teacher. Q: "${currentQuizData[i].question}". Correct ans: "${ans}". Does this handwritten image match? Ignore bad handwriting. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
                 requestBody.contents[0].parts.push({ text: promptBase });
                 requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: img } });
             }
 
             try {
                 const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody)
                 });
                 const d = await resp.json();
                 const res = JSON.parse(d.candidates[0].content.parts[0].text.replace(/```json|```/g, ''));
                 
                 if(res.correct) { 
-                    f.className='feedback correct'; 
-                    f.innerHTML=`⭕ 答對了！ Correct!<br><span style="font-size:16px; color:#15803d;">老師說: ${res.msg}</span>`; 
-                    score++; 
+                    f.className='feedback correct'; f.innerHTML=`⭕ 答對了！ Correct!<br><span style="font-size:16px; color:#15803d;">老師說: ${res.msg}</span>`; score++; 
                 } else { 
-                    f.className='feedback wrong'; 
-                    f.innerHTML=`❌ 不對喔！ Let's try again!<br><span style="font-size:16px; color:#b91c1c;">老師說: ${res.msg}</span><br><b style="color:#7f1d1d; margin-top:8px; display:block;">標準答案 Ans: ${ans}</b>`; 
+                    f.className='feedback wrong'; f.innerHTML=`❌ 不對喔！ Let's try again!<br><span style="font-size:16px; color:#b91c1c;">老師說: ${res.msg}</span><br><b style="color:#7f1d1d; margin-top:8px; display:block;">標準答案 Ans: ${ans}</b>`; 
                 }
             } catch(e) { 
-                f.className='feedback wrong'; 
-                f.innerHTML=`⚠️ 閱卷過程有點小迷糊，請家長幫忙看一下！<br><b style="color:#7f1d1d;">標準答案 Ans: ${ans}</b>`; 
+                f.className='feedback wrong'; f.innerHTML=`⚠️ 閱卷過程有點小迷糊，請家長幫忙看一下！<br><b style="color:#7f1d1d;">標準答案 Ans: ${ans}</b>`; 
             }
         }
         
         status.innerText = `🎉 批改完成！總得分： ${score} / ${currentQuizData.length}`;
         gradeBtn.style.display = 'none';
-        saveRecord(score, currentQuizData.length);
+        
+        // 將這次的分數存入該份考卷的 attempts 中
+        saveAttemptRecord(currentQuizId, score, currentQuizData.length);
     }
 
-    function saveRecord(s, t) {
-        const history = JSON.parse(localStorage.getItem('quizHistory') || '[]');
-        const opts = { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
-        history.unshift({ date: new Date().toLocaleString(undefined, opts), score: `${s} / ${t}` });
-        localStorage.setItem('quizHistory', JSON.stringify(history));
+    // 將成績紀錄存到特定的考卷底下
+    function saveAttemptRecord(quizId, score, total) {
+        let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
+        let targetQuiz = library.find(q => q.id === quizId);
+        
+        if (targetQuiz) {
+            const opts = { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
+            targetQuiz.attempts.unshift({
+                date: new Date().toLocaleString(undefined, opts),
+                score: `${score} / ${total}`
+            });
+            localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
+        }
     }
 
+    // 從歷史題庫中直接載入考卷進行重考
+    function startRetake(quizId) {
+        let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
+        let targetQuiz = library.find(q => q.id === quizId);
+        
+        if (targetQuiz) {
+            currentQuizId = targetQuiz.id;
+            currentQuizData = targetQuiz.quizData;
+            renderQuiz();
+        } else {
+            alert("找不到該份考卷資料！");
+        }
+    }
+
+    // 顯示升級版歷史紀錄 (包含重考按鈕與歷次成績)
     function showHistory() {
-        document.getElementById('parentZone').style.display='none';
-        document.getElementById('historyZone').style.display='block';
-        const h = JSON.parse(localStorage.getItem('quizHistory') || '[]');
-        document.getElementById('historyContainer').innerHTML = h.length ? 
-            h.map(r => `<div class="history-item"><div><small style="color:#64748b; font-weight:800;">Date</small><br><span style="font-size:18px;">${r.date}</span></div><b class="history-score">${r.score}</b></div>`).join('') : 
-            '<div style="text-align:center; padding: 30px; color: #94a3b8; font-weight:800; font-size:18px;">目前還沒有紀錄喔！<br>No history yet.</div>';
+        document.getElementById('parentZone').style.display = 'none';
+        document.getElementById('studentZone').style.display = 'none';
+        document.getElementById('historyZone').style.display = 'block';
+        
+        const library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
+        const container = document.getElementById('historyContainer');
+        
+        if (library.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding: 30px; color: #94a3b8; font-weight:800; font-size:18px;">目前題庫空空的喔！<br>Generate your first quiz!</div>';
+            return;
+        }
+
+        let html = '';
+        library.forEach(quiz => {
+            // 產生歷次成績列表的 HTML
+            let attemptsHtml = '';
+            if (quiz.attempts && quiz.attempts.length > 0) {
+                attemptsHtml = '<div class="attempt-list">' + 
+                    quiz.attempts.map((attempt, idx) => `
+                        <div class="attempt-item">
+                            <span>第 ${quiz.attempts.length - idx} 次測驗 <small style="color:#94a3b8; margin-left:10px;">(${attempt.date})</small></span>
+                            <span class="attempt-score">${attempt.score}</span>
+                        </div>
+                    `).join('') + '</div>';
+            } else {
+                attemptsHtml = '<div style="color:#94a3b8; font-size:14px; margin-top:10px;">尚未測驗過喔！</div>';
+            }
+
+            html += `
+                <div class="history-card">
+                    <div class="history-header">
+                        <div>
+                            <h4 class="history-title">${quiz.title}</h4>
+                            <div class="history-date">建立於: ${quiz.createdAt} | 共 ${quiz.quizData.length} 題</div>
+                        </div>
+                        <button class="retake-btn" onclick="startRetake('${quiz.id}')">🔄 再次測驗</button>
+                    </div>
+                    ${attemptsHtml}
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+        window.scrollTo(0, 0);
     }
 
     function clearHistory() {
-        if(confirm("確定要刪除所有紀錄嗎？ Are you sure?")) {
-            localStorage.removeItem('quizHistory');
+        if(confirm("確定要刪除整個題庫和所有紀錄嗎？這個動作無法復原喔！ Are you sure?")) {
+            localStorage.removeItem('smartQuizLibrary');
             showHistory();
         }
     }
