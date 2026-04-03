@@ -14,6 +14,7 @@
         .section { margin-bottom: 25px; padding: 25px; border-radius: 16px; background: #f8faff; border: 1px solid #e2e8f0; }
         .student-section { background: #fffcf5; border-color: #fef08a; display: none; }
         .history-section { background: #f0fdf4; border-color: #bbf7d0; display: none; }
+        .review-section { background: #fdf2f8; border-color: #fbcfe8; display: none; } /* 回顧專區樣式 */
         
         input[type="password"], input[type="text"], textarea, select, input[type="file"] { width: 100%; padding: 14px; margin: 8px 0 16px 0; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; font-family: inherit; transition: border-color 0.3s; }
         input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); }
@@ -39,6 +40,10 @@
         .del-btn { background: #fee2e2; color: #ef4444; }
         .del-btn:hover { background: #fecaca; color: #b91c1c; }
         
+        /* 回顧詳情按鈕 */
+        .view-detail-btn { background: #e2e8f0; color: #475569; padding: 6px 12px; font-size: 14px; border-radius: 8px; margin-left: 10px; width: auto; display: inline-block; box-shadow: none;}
+        .view-detail-btn:hover { background: #cbd5e1; box-shadow: none; transform: scale(1.05); }
+
         #qrZone { text-align: center; margin-top: 20px; display: none; padding: 25px; border: 3px dashed #FF6584; background: #fff0f3; border-radius: 16px;}
         #qrImage { max-width: 200px; margin-top: 15px; border: 8px solid #fff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; height: auto;}
         #scanner-container { display: none; margin-top: 15px; border: 3px solid #F59E0B; border-radius: 16px; overflow: hidden; background: #fff;}
@@ -54,6 +59,10 @@
         .canvas-container { background-color: #ffffff; background-image: repeating-linear-gradient(transparent, transparent 31px, #e2e8f0 31px, #e2e8f0 32px); background-size: 100% 32px; background-position: 0 10px; border: 2px solid #cbd5e1; margin: 10px 0; border-radius: 12px; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
         canvas { width: 100%; height: 192px; display: block; touch-action: none; cursor: crosshair; }
         
+        /* 回顧模式中的筆跡圖片顯示 */
+        .review-img { width: 100%; max-width: 500px; border: 2px dashed #cbd5e1; border-radius: 12px; display: block; margin: 10px auto; background: #fff;}
+        .review-text-ans { font-size: 22px; font-weight: bold; color: #6C63FF; text-align: center; background: #f1f5f9; padding: 15px; border-radius: 12px; border: 2px dashed #cbd5e1; }
+
         .tools { display: flex; gap: 10px; margin-bottom: 12px; }
         .tool-btn { flex: 1; padding: 12px; font-size: 16px; background: #f1f5f9; border-radius: 10px; border: 2px solid transparent; color: #475569; font-weight: 600; box-shadow: none; margin-top: 0; }
         .tool-btn:hover { transform: none; background: #e2e8f0; }
@@ -72,7 +81,7 @@
         .history-title { font-size: 20px; font-weight: 800; color: #2D3748; margin: 0 0 5px 0; line-height: 1.3;}
         .history-date { font-size: 14px; color: #64748b; margin-top: 5px;}
         .attempt-list { background: #f8fafc; border-radius: 10px; padding: 15px; }
-        .attempt-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 16px;}
+        .attempt-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #e2e8f0; font-size: 16px;}
         .attempt-item:last-child { border-bottom: none; }
         .attempt-score { font-weight: 800; color: var(--secondary); font-size: 18px; }
         
@@ -89,29 +98,14 @@
         .edit-title-icon { cursor: pointer; font-size: 18px; margin-left: 8px; opacity: 0.5; transition: 0.2s; }
         .edit-title-icon:hover { opacity: 1; transform: scale(1.1); }
 
-        /* =========================================
-           📱 RWD 響應式排版設計 (針對手機與小平板)
-           ========================================= */
         @media (max-width: 768px) {
-            body { padding: 10px; }
-            .container { padding: 20px; border-radius: 16px; }
-            h2 { font-size: 22px; }
-            h3 { font-size: 18px; }
-            .section { padding: 15px; }
-            .question-card { padding: 15px; }
-            .question-text { font-size: 20px; }
-            .input-group { padding: 15px; }
-            .grade-btn { font-size: 20px; padding: 15px; }
-            .history-header { flex-direction: column; gap: 10px; }
+            body { padding: 10px; } .container { padding: 20px; border-radius: 16px; } h2 { font-size: 22px; } h3 { font-size: 18px; }
+            .section { padding: 15px; } .question-card { padding: 15px; } .question-text { font-size: 20px; } .input-group { padding: 15px; }
+            .grade-btn { font-size: 20px; padding: 15px; } .history-header { flex-direction: column; gap: 10px; }
         }
-
         @media (max-width: 480px) {
-            .card-actions { grid-template-columns: 1fr; gap: 8px; } /* 手機上按鈕變成上下排，避免誤觸 */
-            button { font-size: 16px; padding: 14px; }
-            .tool-btn { font-size: 14px; padding: 10px; }
-            .tools { flex-wrap: wrap; } /* 畫筆按鈕如果太擠會自動換行 */
-            .history-title { font-size: 18px; }
-            .attempt-item { font-size: 14px; }
+            .card-actions { grid-template-columns: 1fr; gap: 8px; } button { font-size: 16px; padding: 14px; } .tool-btn { font-size: 14px; padding: 10px; }
+            .tools { flex-wrap: wrap; } .history-title { font-size: 18px; } .attempt-item { flex-direction: column; align-items: flex-start; gap: 8px;}
         }
     </style>
 </head>
@@ -119,7 +113,7 @@
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (全能版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (學習足跡版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <div style="display:flex; gap:10px; margin-top: 10px;">
@@ -176,6 +170,12 @@
         <button id="gradeBtn" class="grade-btn" onclick="gradeWithAI()">🤖 寫完了！請 AI 老師批改</button>
         <p id="gradingStatus">🔍 AI 老師正在光速閱卷中...</p>
         <button onclick="location.href=location.pathname" style="background:#94a3b8; margin-top:20px;">🔙 回首頁 Back to Home</button>
+    </div>
+
+    <div id="reviewZone" class="section review-section">
+        <h1 style="color: #EC4899; font-size: 28px;">📸 測驗回顧 Review Attempt</h1>
+        <div id="reviewContainer"></div>
+        <button onclick="showHistory()" style="background:#94a3b8; margin-top:20px;">🔙 返回歷史紀錄 Back to History</button>
     </div>
 
     <div id="historyZone" class="section history-section">
@@ -359,6 +359,7 @@
         window.history.replaceState({}, document.title, window.location.pathname);
         document.getElementById('parentZone').style.display = 'none';
         document.getElementById('historyZone').style.display = 'none';
+        document.getElementById('reviewZone').style.display = 'none';
         document.getElementById('studentZone').style.display = 'block';
         
         const hasChinese = /[\u4e00-\u9fa5]/.test(currentQuizData[0].question);
@@ -395,33 +396,19 @@
 
     function initCanvas(index) {
         const canvas = document.getElementById(`canvas_${index}`); const ctx = canvas.getContext('2d'); const ratio = window.devicePixelRatio || 1;
-        
-        // 使用 getBoundingClientRect 獲取實際寬度，確保 RWD 時畫布不會變形
         const rect = canvas.parentElement.getBoundingClientRect();
-        canvas.width = rect.width * ratio; 
-        canvas.height = 192 * ratio; 
-        ctx.scale(ratio, ratio);
+        canvas.width = rect.width * ratio; canvas.height = 192 * ratio; ctx.scale(ratio, ratio);
         
         ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = 4; ctx.strokeStyle = "#1e293b";
         let drawing = false; let lx, ly; canvases[index] = { canvas, ctx, tool: 'pen' };
         
-        const getXY = (e) => { 
-            const r = canvas.getBoundingClientRect(); 
-            const cx = e.touches ? e.touches[0].clientX : e.clientX; 
-            const cy = e.touches ? e.touches[0].clientY : e.clientY; 
-            return { x: cx - r.left, y: cy - r.top }; 
-        };
+        const getXY = (e) => { const r = canvas.getBoundingClientRect(); const cx = e.touches ? e.touches[0].clientX : e.clientX; const cy = e.touches ? e.touches[0].clientY : e.clientY; return { x: cx - r.left, y: cy - r.top }; };
         const start = (e) => { e.preventDefault(); drawing = true; const p = getXY(e); lx = p.x; ly = p.y; };
         const move = (e) => { if(!drawing) return; e.preventDefault(); const p = getXY(e); ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(p.x, p.y); ctx.stroke(); lx = p.x; ly = p.y; };
         
         canvas.addEventListener('touchstart', start, {passive: false}); canvas.addEventListener('touchmove', move, {passive: false}); canvas.addEventListener('touchend', () => drawing=false);
         canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); canvas.addEventListener('mouseup', () => drawing=false); canvas.addEventListener('mouseout', () => drawing=false);
     }
-
-    // 監聽視窗大小改變，避免畫布比例失真 (單純重繪不適合，所以保持 CSS 100% 自適應)
-    window.addEventListener('resize', () => {
-        // RWD 情況下，canvas 的 width 100% 已經交由 CSS 處理。
-    });
 
     function setTool(i, t) {
         const c = canvases[i]; c.tool = t;
@@ -439,13 +426,17 @@
         const gradeBtn = document.getElementById('gradeBtn');
         gradeBtn.disabled = true;
         status.style.display = 'block';
-        status.innerText = `🚀 AI 老師正在「同時」光速批改全卷中... Please wait...`;
+        status.innerText = `🚀 AI 老師正在光速批改全卷中... Please wait...`;
+
+        // 用來打包這份考卷所有細節的陣列，準備存入歷史紀錄
+        let attemptDetails = [];
 
         const gradePromises = currentQuizData.map(async (qData, i) => {
             const ans = qData.answer;
             const textInputVal = document.getElementById(`textInput_${i}`).value.trim();
             let requestBody = { contents: [{ parts: [] }] };
             let promptBase = "";
+            let savedImageBase64 = null; // 用來存檔的圖片
 
             if (textInputVal !== "") {
                 promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Student typed: "${textInputVal}". Does it mean the same? Ignore minor typos. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
@@ -455,11 +446,15 @@
                 const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height).data;
                 let isBlank = true;
                 for (let j = 3; j < imgData.length; j += 4) { if (imgData[j] > 0) { isBlank = false; break; } }
-                if (isBlank) return { index: i, correct: false, msg: "", ans: ans, isBlank: true, isError: false };
+                if (isBlank) return { index: i, question: qData.question, ans: ans, studentText: "", studentImg: null, correct: false, msg: "", isBlank: true, isError: false };
 
                 const tempCanvas = document.createElement('canvas'); tempCanvas.width = canvasEl.width; tempCanvas.height = canvasEl.height;
                 const tempCtx = tempCanvas.getContext('2d'); tempCtx.fillStyle = '#ffffff'; tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height); tempCtx.drawImage(canvasEl, 0, 0);
-                const img = tempCanvas.toDataURL("image/jpeg", 0.8).split(',')[1];
+                
+                // 【核心壓縮技術】：品質調為 0.4，大幅縮減歷史紀錄的儲存空間
+                const fullBase64 = tempCanvas.toDataURL("image/jpeg", 0.4);
+                const img = fullBase64.split(',')[1];
+                savedImageBase64 = fullBase64; // 留給存檔用
 
                 promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Does this handwritten image match? Ignore bad handwriting. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
                 requestBody.contents[0].parts.push({ text: promptBase }); requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: img } });
@@ -471,8 +466,8 @@
                 });
                 const d = await resp.json();
                 const res = JSON.parse(d.candidates[0].content.parts[0].text.replace(/```json|```/g, ''));
-                return { index: i, correct: res.correct, msg: res.msg, ans: ans, isBlank: false, isError: false };
-            } catch(e) { return { index: i, correct: false, msg: "", ans: ans, isBlank: false, isError: true }; }
+                return { index: i, question: qData.question, ans: ans, studentText: textInputVal, studentImg: savedImageBase64, correct: res.correct, msg: res.msg, isBlank: false, isError: false };
+            } catch(e) { return { index: i, question: qData.question, ans: ans, studentText: textInputVal, studentImg: savedImageBase64, correct: false, msg: "", isBlank: false, isError: true }; }
         });
 
         const results = await Promise.all(gradePromises);
@@ -481,25 +476,100 @@
         results.forEach(res => {
             const f = document.getElementById(`f_${res.index}`);
             f.style.display = 'block';
-            if (res.isBlank) { f.className='feedback wrong'; f.innerHTML=`❌ 哎呀，這題忘了寫喔！ You left this blank!<br><b style="color:#b91c1c;">標準答案 Ans: ${res.ans}</b>`; } 
-            else if (res.isError) { f.className='feedback wrong'; f.innerHTML=`⚠️ 閱卷連線不穩定，請家長幫忙看一下！<br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; } 
-            else if (res.correct) { f.className='feedback correct'; f.innerHTML=`⭕ 答對了！ Correct!<br><span style="font-size:16px; color:#15803d;">老師說: ${res.msg}</span>`; score++; } 
-            else { f.className='feedback wrong'; f.innerHTML=`❌ 不對喔！ Let's try again!<br><span style="font-size:16px; color:#b91c1c;">老師說: ${res.msg}</span><br><b style="color:#7f1d1d; margin-top:8px; display:block;">標準答案 Ans: ${res.ans}</b>`; }
+            let finalMsgHtml = "";
+
+            if (res.isBlank) { 
+                finalMsgHtml = `❌ 哎呀，這題忘了寫喔！ You left this blank!<br><b style="color:#b91c1c;">標準答案 Ans: ${res.ans}</b>`; 
+                f.className='feedback wrong'; 
+            } 
+            else if (res.isError) { 
+                finalMsgHtml = `⚠️ 閱卷連線不穩定，請家長幫忙看一下！<br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; 
+                f.className='feedback wrong'; 
+            } 
+            else if (res.correct) { 
+                finalMsgHtml = `⭕ 答對了！ Correct!<br><span style="font-size:16px; color:#15803d;">老師說: ${res.msg}</span>`; 
+                f.className='feedback correct'; 
+                score++; 
+            } 
+            else { 
+                finalMsgHtml = `❌ 不對喔！ Let's try again!<br><span style="font-size:16px; color:#b91c1c;">老師說: ${res.msg}</span><br><b style="color:#7f1d1d; margin-top:8px; display:block;">標準答案 Ans: ${res.ans}</b>`; 
+                f.className='feedback wrong'; 
+            }
+            f.innerHTML = finalMsgHtml;
+
+            // 存入詳情陣列
+            attemptDetails.push({
+                question: res.question,
+                correctAnswer: res.ans,
+                studentText: res.studentText,
+                studentImage: res.studentImg,
+                isCorrect: res.correct && !res.isBlank && !res.isError,
+                feedbackHtml: finalMsgHtml
+            });
         });
 
         status.innerText = `🎉 批改完成！總得分： ${score} / ${currentQuizData.length}`;
         gradeBtn.style.display = 'none';
-        saveAttemptRecord(currentQuizId, score, currentQuizData.length);
+        
+        // 儲存帶有「作答詳情」的紀錄
+        saveAttemptRecordWithDetails(currentQuizId, score, currentQuizData.length, attemptDetails);
     }
 
-    function saveAttemptRecord(quizId, score, total) {
+    function saveAttemptRecordWithDetails(quizId, score, total, details) {
         let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
         let targetQuiz = library.find(q => q.id === quizId);
         if (targetQuiz) {
             const opts = { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
-            targetQuiz.attempts.unshift({ date: new Date().toLocaleString(undefined, opts), score: `${score} / ${total}` });
+            targetQuiz.attempts.unshift({ 
+                date: new Date().toLocaleString(undefined, opts), 
+                score: `${score} / ${total}`,
+                details: details // 將作答快照存起來
+            });
             localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
         }
+    }
+
+    // 🚀【新功能】：渲染歷史作答詳情
+    function showAttemptDetails(quizId, attemptIndex) {
+        let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
+        let targetQuiz = library.find(q => q.id === quizId);
+        if (!targetQuiz || !targetQuiz.attempts[attemptIndex]) return;
+
+        const attemptData = targetQuiz.attempts[attemptIndex];
+        const container = document.getElementById('reviewContainer');
+        container.innerHTML = '';
+
+        attemptData.details.forEach((item, i) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            
+            // 判斷小朋友是用打字還是畫圖
+            let studentAnsHtml = '';
+            if (item.studentText) {
+                studentAnsHtml = `<div class="review-text-ans">${item.studentText}</div>`;
+            } else if (item.studentImage) {
+                studentAnsHtml = `<img src="${item.studentImage}" class="review-img" alt="Student's drawing">`;
+            } else {
+                studentAnsHtml = `<div class="review-text-ans" style="color:#94a3b8; border-style:dashed;">(空白未作答 Blank)</div>`;
+            }
+
+            // 直接套用當初存下來的評語 HTML 與樣式
+            const feedbackClass = item.isCorrect ? 'correct' : 'wrong';
+
+            card.innerHTML = `
+                <div class="question-text"><span style="color:#94a3b8; font-size:18px;">Q${i+1}.</span><br>${item.question}</div>
+                <div style="margin-bottom: 15px;">
+                    <h4 style="color: #64748b; margin-bottom: 8px; font-size: 16px;">當時的作答內容：</h4>
+                    ${studentAnsHtml}
+                </div>
+                <div class="feedback ${feedbackClass}" style="display:block;">${item.feedbackHtml}</div>
+            `;
+            container.appendChild(card);
+        });
+
+        document.getElementById('historyZone').style.display = 'none';
+        document.getElementById('reviewZone').style.display = 'block';
+        window.scrollTo(0, 0);
     }
 
     function editQuizTitle(quizId) {
@@ -584,7 +654,9 @@
     }
 
     function showHistory() {
-        document.getElementById('parentZone').style.display = 'none'; document.getElementById('studentZone').style.display = 'none';
+        document.getElementById('parentZone').style.display = 'none'; 
+        document.getElementById('studentZone').style.display = 'none';
+        document.getElementById('reviewZone').style.display = 'none';
         document.getElementById('historyZone').style.display = 'block';
         
         const library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
@@ -600,8 +672,14 @@
             if (quiz.attempts && quiz.attempts.length > 0) {
                 attemptsHtml = '<div class="attempt-list">' + quiz.attempts.map((attempt, idx) => `
                         <div class="attempt-item">
-                            <span>第 ${quiz.attempts.length - idx} 次 <small style="color:#94a3b8; margin-left:10px;">(${attempt.date})</small></span>
-                            <span class="attempt-score">${attempt.score}</span>
+                            <div>
+                                <span style="font-weight:bold; color:#4a5568;">第 ${quiz.attempts.length - idx} 次</span> 
+                                <small style="color:#94a3b8; margin-left:8px;">(${attempt.date})</small>
+                            </div>
+                            <div style="display:flex; align-items:center;">
+                                <span class="attempt-score">${attempt.score}</span>
+                                ${attempt.details ? `<button class="view-detail-btn" onclick="showAttemptDetails('${quiz.id}', ${idx})">👁️ 詳情 Details</button>` : ''}
+                            </div>
                         </div>
                     `).join('') + '</div>';
             } else { attemptsHtml = '<div style="color:#94a3b8; font-size:14px; margin-top:10px;">尚未測驗過喔！</div>'; }
