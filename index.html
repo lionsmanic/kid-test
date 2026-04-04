@@ -112,7 +112,7 @@
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (真文本精準版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (防呆壓縮版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <div style="display:flex; gap:10px; margin-top: 10px;">
@@ -135,16 +135,16 @@
         </select>
 
         <label class="setting-label">📚 貼上長篇文章或影片字幕 (Text / Transcript):</label>
-        <textarea id="longTextData" class="transcript-box" placeholder="如果您想從 YouTube 影片出題，請在此貼上「影片的字幕 (Transcript)」或直接貼上網路文章內容，這樣 AI 出題才會100%精準喔！"></textarea>
+        <textarea id="longTextData" class="transcript-box" placeholder="如果您想從 YouTube 影片出題，請在此貼上「影片的字幕」或直接貼上網路文章內容，這樣 AI 出題才會100%精準喔！"></textarea>
 
-        <label class="setting-label">📎 上傳參考照片/PDF (圖片題適用):</label>
+        <label class="setting-label">📎 上傳參考照片/PDF (自動壓縮防當機):</label>
         <div class="file-upload-wrapper">
             <input type="file" id="fileInput" accept="image/jpeg, image/png, image/webp, application/pdf" multiple onchange="updateFileList()">
             <div id="fileList"></div>
         </div>
 
         <label class="setting-label">🎯 出題綜合指令 (Topic & Instructions):</label>
-        <textarea id="promptText" placeholder="例如：請根據上方的字幕內容，幫我出 5 題觀念選擇題，選項請放在題目裡面..."></textarea>
+        <textarea id="promptText" placeholder="例如：請根據上傳的照片，幫我出 3 題類似的變化題..."></textarea>
         
         <button onclick="generateQuiz()" id="genBtn">🚀 1. 綜合產生考卷 Generate Questions</button>
         <p id="loading">✨ AI 正在消化大量資料中... AI is processing...</p>
@@ -270,13 +270,45 @@
 
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-    function getFileBase64(file) {
+    // 🚀【核心救援功能 1】：自動壓縮上傳的圖片 (避免當機)
+    function processAndCompressFile(file) {
         return new Promise((resolve, reject) => {
+            // 如果是 PDF，無法輕易用 canvas 壓縮，直接轉 base64
+            if (file.type === 'application/pdf') {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve({ mime_type: file.type, data: reader.result.split(',')[1] });
+                reader.onerror = error => reject(error);
+                return;
+            }
+
+            // 如果是圖片，使用 Canvas 進行壓縮
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = () => {
-                let encoded = reader.result.toString().replace(/^data:(.*,)?/, '');
-                resolve({ mime_type: file.type, data: encoded });
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1200; // 將最寬限制在 1200px (足以讓 AI 看清文字)
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > MAX_WIDTH) {
+                        height = Math.round((height * MAX_WIDTH) / width);
+                        width = MAX_WIDTH;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // 壓縮品質設為 0.8，可大幅縮減檔案大小
+                    const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+                    resolve({ mime_type: 'image/jpeg', data: base64 });
+                };
+                img.onerror = () => reject(new Error("圖片讀取失敗"));
+                img.src = e.target.result;
             };
             reader.onerror = error => reject(error);
         });
@@ -299,27 +331,26 @@
         const fileInput = document.getElementById('fileInput');
         
         if (!apiKey || (!prompt && !transcriptText && fileInput.files.length === 0)) { 
-            alert("請輸入 API Key，並且至少提供指令、字幕文本或檔案其中一項喔！"); return; 
+            alert("請輸入 API Key，並且至少提供指令、文本或照片其中一項喔！"); return; 
         }
         
         localStorage.setItem('geminiApiKey', apiKey); localStorage.setItem('quizLanguage', lang);
         document.getElementById('genBtn').disabled = true; document.getElementById('loading').style.display = 'block';
         document.getElementById('previewZone').style.display = 'none'; document.getElementById('qrZone').style.display = 'none';
 
-        // 整合文字與指令
         let finalInstruction = prompt;
         if (transcriptText) {
-            finalInstruction += `\n\n[Reference Text / Transcript to base questions on]:\n"""\n${transcriptText}\n"""`;
+            finalInstruction += `\n\n[Reference Content]:\n"""\n${transcriptText}\n"""`;
         }
 
-        const sysPrompt = `You are an expert educational assistant. Create a quiz based strictly on the provided reference text, files, and user instructions. MUST output strictly as a JSON array of objects with keys: "question" and "answer". Output language MUST be exactly: ${lang}. DO NOT wrap in markdown like \`\`\`json. Return ONLY the pure JSON array.`;
-        let apiParts = [{ text: sysPrompt + "\n\nUser Instructions & Content:\n" + finalInstruction }];
+        const sysPrompt = `You are an expert educational assistant. Create a quiz based strictly on the provided references and user instructions. MUST output strictly as a JSON array of objects with keys: "question" and "answer". Output language MUST be exactly: ${lang}. Return ONLY the pure JSON array. Do not include introductory text.`;
+        let apiParts = [{ text: sysPrompt + "\n\nUser Instructions:\n" + finalInstruction }];
         
         try {
             if (fileInput.files.length > 0) {
-                document.getElementById('loading').innerText = `✨ 正在讀取檔案與綜合思考中...`;
+                document.getElementById('loading').innerText = `✨ 正在為圖片進行壓縮並由 AI 判讀中 (共 ${fileInput.files.length} 個檔案)...`;
                 for (let i = 0; i < fileInput.files.length; i++) {
-                    const fileData = await getFileBase64(fileInput.files[i]);
+                    const fileData = await processAndCompressFile(fileInput.files[i]);
                     apiParts.push({ inline_data: { mime_type: fileData.mime_type, data: fileData.data } });
                 }
             } else {
@@ -330,13 +361,25 @@
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: apiParts }] })
             });
             const data = await resp.json();
+            
+            // 安全性阻擋判斷
+            if (data.promptFeedback && data.promptFeedback.blockReason) {
+                throw new Error(`AI 安全過濾攔截了這張圖片或內容 (原因: ${data.promptFeedback.blockReason})。請嘗試更換圖片。`);
+            }
             if (data.error) throw new Error(data.error.message);
-            const text = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
-            currentQuizData = JSON.parse(text);
+            
+            let text = data.candidates[0].content.parts[0].text;
+            
+            // 🚀【核心救援功能 2】：智能 Regex 解析 (防止 AI 搞威破壞 JSON 格式)
+            let jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+            if (jsonMatch) {
+                currentQuizData = JSON.parse(jsonMatch[0]);
+            } else {
+                throw new Error("AI 產生的格式大亂走了，請再試一次！(找不到陣列標記)");
+            }
 
             currentQuizId = "quiz_" + Date.now().toString();
-            // 自動命名標題優化
-            let rawTitle = prompt ? prompt : (transcriptText ? "文章/影片字幕測驗" : currentQuizData[0].question);
+            let rawTitle = prompt ? prompt : (transcriptText ? "文章/影片字幕測驗" : "圖片測驗題");
             let generatedTitle = rawTitle.substring(0, 20) + (rawTitle.length > 20 ? "..." : "");
             
             const langPrefix = lang.includes('中文') ? '[TW]' : '[EN]';
@@ -346,15 +389,18 @@
             document.getElementById('previewZone').style.display = 'block';
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             
-        } catch (e) { alert("生成失敗 (可能格式錯誤或 API 阻擋): " + e.message); } 
-        finally { document.getElementById('loading').style.display = 'none'; document.getElementById('genBtn').disabled = false; }
+        } catch (e) { 
+            alert("⚠️ 生成失敗！\n原因：" + e.message + "\n\n💡 建議：若一直失敗，可能是圖片太複雜或包含被 AI 阻擋的元素。"); 
+        } finally { 
+            document.getElementById('loading').style.display = 'none'; document.getElementById('genBtn').disabled = false; 
+        }
     }
 
     function startQuizDirectly() { renderQuiz(); }
 
     function generateQRCode() {
         const langPrefix = document.getElementById('langSelect').value.includes('中文') ? '[TW]' : '[EN]';
-        let rawTitle = document.getElementById('promptText').value.trim() || (document.getElementById('longTextData').value.trim() ? "文章/影片字幕測驗" : "從手機傳送的測驗");
+        let rawTitle = document.getElementById('promptText').value.trim() || (document.getElementById('longTextData').value.trim() ? "文章/影片字幕測驗" : "從手機傳送的圖片測驗");
         let generatedTitle = rawTitle.substring(0, 20) + (rawTitle.length > 20 ? "..." : "");
         
         const payload = { title: `${langPrefix} ${generatedTitle}`, data: currentQuizData };
@@ -666,7 +712,7 @@
                             </div>
                             <div style="display:flex; align-items:center;">
                                 <span class="attempt-score">${attempt.score}</span>
-                                ${attempt.details ? `<button class="view-detail-btn" onclick="showAttemptDetails('${quiz.id}', ${idx})">👁️ 詳情 Details</button>` : ''}
+                                ${attempt.details ? `<button class="view-detail-btn" onclick="showAttemptDetails('${quiz.id}', ${idx})">👁️ 詳情</button>` : ''}
                             </div>
                         </div>
                     `).join('') + '</div>';
