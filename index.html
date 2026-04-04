@@ -27,6 +27,7 @@
         button:active { transform: translateY(1px); }
         button:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; transform: none; }
         
+        .qr-btn { background: linear-gradient(135deg, #FF6584 0%, #E91E63 100%); box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3); }
         .share-btn { background: linear-gradient(135deg, #10B981 0%, #059669 100%); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
         .scan-btn { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
         .history-btn { background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); }
@@ -60,10 +61,14 @@
         .review-img { width: 100%; max-width: 500px; border: 2px dashed #cbd5e1; border-radius: 12px; display: block; margin: 10px auto; background: #fff;}
         .review-text-ans { font-size: 22px; font-weight: bold; color: #6C63FF; text-align: center; background: #f1f5f9; padding: 15px; border-radius: 12px; border: 2px dashed #cbd5e1; }
 
-        .tools { display: flex; gap: 10px; margin-bottom: 12px; }
-        .tool-btn { flex: 1; padding: 12px; font-size: 16px; background: #f1f5f9; border-radius: 10px; border: 2px solid transparent; color: #475569; font-weight: 600; box-shadow: none; margin-top: 0; }
+        /* 升級版工具列排版 */
+        .tools { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;}
+        .tool-btn { flex: 1; min-width: 70px; padding: 12px 8px; font-size: 15px; background: #f1f5f9; border-radius: 10px; border: 2px solid transparent; color: #475569; font-weight: 800; box-shadow: none; margin-top: 0; }
         .tool-btn:hover { transform: none; background: #e2e8f0; }
         .tool-btn.active { background: #ebf4ff; color: var(--primary); border-color: var(--primary); }
+        .tool-btn.active-pan { background: #fffbeb; color: #d97706; border-color: #f59e0b; }
+        .undo-btn { background: #f3e8ff; color: #7e22ce; }
+        .undo-btn:hover { background: #e9d5ff; }
         .clear-btn { background: #fee2e2; color: #ef4444; }
         .clear-btn:hover { background: #fecaca; }
         
@@ -95,7 +100,6 @@
         .edit-title-icon { cursor: pointer; font-size: 18px; margin-left: 8px; opacity: 0.5; transition: 0.2s; }
         .edit-title-icon:hover { opacity: 1; transform: scale(1.1); }
         
-        /* 專屬傳送面板按鈕樣式 */
         .share-option-btn { background: #f8fafc; color: #1e293b; border: 2px solid #e2e8f0; padding: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; box-shadow: none;}
         .share-option-btn:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-2px); }
         .share-option-btn.airdrop { color: #2563EB; border-color: #bfdbfe; background: #eff6ff;}
@@ -107,8 +111,8 @@
             .grade-btn { font-size: 20px; padding: 15px; } .history-header { flex-direction: column; gap: 10px; }
         }
         @media (max-width: 480px) {
-            .card-actions { grid-template-columns: 1fr; gap: 8px; } button { font-size: 16px; padding: 14px; } .tool-btn { font-size: 14px; padding: 10px; }
-            .tools { flex-wrap: wrap; } .history-title { font-size: 18px; } .attempt-item { flex-direction: column; align-items: flex-start; gap: 8px;}
+            .card-actions { grid-template-columns: 1fr; gap: 8px; } button { font-size: 16px; padding: 14px; } 
+            .tool-btn { font-size: 13px; padding: 10px 5px; } .history-title { font-size: 18px; } .attempt-item { flex-direction: column; align-items: flex-start; gap: 8px;}
         }
     </style>
 </head>
@@ -116,7 +120,7 @@
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (多元傳送版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (防誤觸版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <div style="display:flex; gap:10px; margin-top: 10px;">
@@ -192,26 +196,17 @@
         
         <button class="share-option-btn airdrop" onclick="triggerNativeShare()">
             <span style="font-size: 24px;">✈️</span> 
-            <div style="text-align: left;">
-                <div style="font-weight: 800;">AirDrop / 系統分享</div>
-                <div style="font-size: 12px; font-weight: normal;">直接傳送至附近的 iPad 或 Line</div>
-            </div>
+            <div style="text-align: left;"><div style="font-weight: 800;">AirDrop / 系統分享</div><div style="font-size: 12px; font-weight: normal;">直接傳送至附近的 iPad 或 Line</div></div>
         </button>
         
         <button class="share-option-btn copy" onclick="triggerCopyLink()">
             <span style="font-size: 24px;">🔗</span> 
-            <div style="text-align: left;">
-                <div style="font-weight: 800;">複製考卷連結</div>
-                <div style="font-size: 12px; font-weight: normal;">可在 iPad 貼上，或自行傳送給他人</div>
-            </div>
+            <div style="text-align: left;"><div style="font-weight: 800;">複製考卷連結</div><div style="font-size: 12px; font-weight: normal;">可在 iPad 貼上，或自行傳送</div></div>
         </button>
         
         <button class="share-option-btn" onclick="triggerShowQR()" style="border-color: #fca5a5; color: #e11d48; background: #fef2f2;">
             <span style="font-size: 24px;">📱</span> 
-            <div style="text-align: left;">
-                <div style="font-weight: 800;">顯示 QR Code</div>
-                <div style="font-size: 12px; font-weight: normal;">(注意：題目過多時可能無法掃描)</div>
-            </div>
+            <div style="text-align: left;"><div style="font-weight: 800;">顯示 QR Code</div><div style="font-size: 12px; font-weight: normal;">(注意：題目過多時可能無法掃描)</div></div>
         </button>
 
         <div id="qrDisplayArea" style="display:none; margin-top: 15px;">
@@ -233,7 +228,7 @@
 <script>
     let currentQuizData = [];
     let currentQuizId = null; 
-    let currentShareUrl = ""; // 儲存目前要分享的 URL
+    let currentShareUrl = ""; 
     let canvases = [];
     let html5QrcodeScanner = null;
 
@@ -298,9 +293,7 @@
 
     function closeModal(id) { 
         document.getElementById(id).style.display = 'none'; 
-        if (id === 'shareModal') {
-            document.getElementById('qrDisplayArea').style.display = 'none';
-        }
+        if (id === 'shareModal') document.getElementById('qrDisplayArea').style.display = 'none';
     }
 
     function processAndCompressFile(file) {
@@ -379,7 +372,7 @@
             });
             const data = await resp.json();
             
-            if (data.promptFeedback && data.promptFeedback.blockReason) { throw new Error(`AI 安全過濾攔截了這張圖片或內容。`); }
+            if (data.promptFeedback && data.promptFeedback.blockReason) { throw new Error(`AI 安全過濾攔截了圖片內容。`); }
             if (data.error) throw new Error(data.error.message);
             
             let text = data.candidates[0].content.parts[0].text;
@@ -404,10 +397,8 @@
 
     function startQuizDirectly() { renderQuiz(); }
 
-    // 🚀【升級核心】：準備並開啟傳送面板
     function openShareModal(sourceId) {
-        let titleToShare = "";
-        let dataToShare = [];
+        let titleToShare = ""; let dataToShare = [];
 
         if (sourceId === 'current') {
             const langPrefix = document.getElementById('langSelect').value.includes('中文') ? '[TW]' : '[EN]';
@@ -417,12 +408,8 @@
         } else {
             let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
             let targetQuiz = library.find(q => q.id === sourceId);
-            if (targetQuiz) {
-                titleToShare = targetQuiz.title;
-                dataToShare = targetQuiz.quizData;
-            } else {
-                return;
-            }
+            if (targetQuiz) { titleToShare = targetQuiz.title; dataToShare = targetQuiz.quizData; } 
+            else return;
         }
 
         const payload = { title: titleToShare, data: dataToShare };
@@ -430,41 +417,29 @@
         const encodedData = window.btoa(unescape(encodeURIComponent(jsonStr)));
         currentShareUrl = window.location.origin + window.location.pathname + "?d=" + encodedData;
 
-        // 顯示 Modal
         document.getElementById('qrDisplayArea').style.display = 'none';
         document.getElementById('shareModal').style.display = 'flex';
     }
 
-    // 觸發 AirDrop / 系統分享
     function triggerNativeShare() {
         if (navigator.share) {
-            navigator.share({
-                title: '快來挑戰新考卷！',
-                text: '這是一份為你準備的 AI 專屬考卷，點擊連結立刻開始測驗：',
-                url: currentShareUrl
-            }).catch(console.error);
-        } else {
-            alert("⚠️ 您的裝置目前不支援系統分享，請改用「複製連結」喔！");
-        }
+            navigator.share({ title: '快來挑戰新考卷！', text: '這是一份為你準備的專屬考卷，點擊連結立刻開始測驗：', url: currentShareUrl }).catch(console.error);
+        } else { alert("⚠️ 您的裝置目前不支援系統分享，請改用「複製連結」喔！"); }
     }
 
-    // 觸發複製連結
     function triggerCopyLink() {
         navigator.clipboard.writeText(currentShareUrl).then(() => {
-            alert("✅ 考卷專屬連結已複製！\n您現在可以直接在 iPad 上貼上這個連結，或是透過 Line 傳送。");
+            alert("✅ 考卷專屬連結已複製！\n您可以直接在 iPad 上貼上這個連結。");
             closeModal('shareModal');
-        }).catch(err => {
-            alert("複製失敗，請重試。");
-        });
+        }).catch(err => { alert("複製失敗，請重試。"); });
     }
 
-    // 觸發顯示 QR Code
     function triggerShowQR() {
-        const qrImg = document.getElementById('shareQrImage');
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(currentShareUrl)}`;
+        document.getElementById('shareQrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(currentShareUrl)}`;
         document.getElementById('qrDisplayArea').style.display = 'block';
     }
 
+    // 🚀【防誤觸核心】：渲染畫布與工具列
     function renderQuiz() {
         window.history.replaceState({}, document.title, window.location.pathname);
         document.getElementById('parentZone').style.display = 'none';
@@ -492,6 +467,8 @@
                     <div class="tools">
                         <button class="tool-btn active" id="pen_${i}" onclick="setTool(${i}, 'pen')">✏️ 畫筆</button>
                         <button class="tool-btn" id="eraser_${i}" onclick="setTool(${i}, 'eraser')">🧽 橡皮擦</button>
+                        <button class="tool-btn" id="pan_${i}" onclick="setTool(${i}, 'pan')">🖐️ 滑動畫布</button>
+                        <button class="tool-btn undo-btn" onclick="undoCanvas(${i})">↩️ 上一步</button>
                         <button class="tool-btn clear-btn" onclick="clearCanvas(${i})">🗑️ 清空</button>
                     </div>
                     <div class="canvas-container"><canvas id="canvas_${i}"></canvas></div>
@@ -510,24 +487,87 @@
         canvas.width = rect.width * ratio; canvas.height = 192 * ratio; ctx.scale(ratio, ratio);
         
         ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = 4; ctx.strokeStyle = "#1e293b";
-        let drawing = false; let lx, ly; canvases[index] = { canvas, ctx, tool: 'pen' };
         
-        const getXY = (e) => { const r = canvas.getBoundingClientRect(); const cx = e.touches ? e.touches[0].clientX : e.clientX; const cy = e.touches ? e.touches[0].clientY : e.clientY; return { x: cx - r.left, y: cy - r.top }; };
-        const start = (e) => { e.preventDefault(); drawing = true; const p = getXY(e); lx = p.x; ly = p.y; };
-        const move = (e) => { if(!drawing) return; e.preventDefault(); const p = getXY(e); ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(p.x, p.y); ctx.stroke(); lx = p.x; ly = p.y; };
+        // 預設鎖定捲動 (可畫畫)
+        canvas.style.touchAction = 'none'; 
+        
+        let drawing = false; let lx, ly; 
+        canvases[index] = { canvas, ctx, tool: 'pen', history: [] };
+        
+        const getXY = (e) => { 
+            const r = canvas.getBoundingClientRect(); 
+            const cx = e.touches ? e.touches[0].clientX : e.clientX; 
+            const cy = e.touches ? e.touches[0].clientY : e.clientY; 
+            return { x: cx - r.left, y: cy - r.top }; 
+        };
+        
+        const start = (e) => { 
+            if (canvases[index].tool === 'pan') return; // 如果是滑動模式，直接放行原生捲動
+            e.preventDefault(); 
+            drawing = true; 
+            
+            // 存入復原歷史 (記錄畫這一筆之前的狀態)
+            canvases[index].history.push(canvas.toDataURL());
+            if (canvases[index].history.length > 10) canvases[index].history.shift(); // 最多記 10 步
+
+            const p = getXY(e); lx = p.x; ly = p.y; 
+            ctx.beginPath(); ctx.arc(lx, ly, ctx.lineWidth/2, 0, Math.PI*2); ctx.fill(); // 點一下也能畫點
+        };
+        
+        const move = (e) => { 
+            if(!drawing || canvases[index].tool === 'pan') return; 
+            e.preventDefault(); const p = getXY(e); ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(p.x, p.y); ctx.stroke(); lx = p.x; ly = p.y; 
+        };
         
         canvas.addEventListener('touchstart', start, {passive: false}); canvas.addEventListener('touchmove', move, {passive: false}); canvas.addEventListener('touchend', () => drawing=false);
         canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); canvas.addEventListener('mouseup', () => drawing=false); canvas.addEventListener('mouseout', () => drawing=false);
     }
 
+    // 🚀【防誤觸核心】：工具切換邏輯
     function setTool(i, t) {
         const c = canvases[i]; c.tool = t;
-        document.getElementById(`pen_${i}`).classList.toggle('active', t==='pen'); document.getElementById(`eraser_${i}`).classList.toggle('active', t==='eraser');
-        c.ctx.globalCompositeOperation = t==='pen' ? 'source-over' : 'destination-out'; c.ctx.lineWidth = t==='pen' ? 4 : 25;
+        
+        // UI 按鈕切換
+        document.getElementById(`pen_${i}`).classList.toggle('active', t==='pen'); 
+        document.getElementById(`eraser_${i}`).classList.toggle('active', t==='eraser');
+        document.getElementById(`pan_${i}`).classList.toggle('active-pan', t==='pan');
+
+        if (t === 'pan') {
+            // 開啟滑動模式：允許原生捲動，不攔截 touch 事件
+            c.canvas.style.touchAction = 'auto';
+            c.canvas.style.cursor = 'grab';
+        } else {
+            // 開啟畫筆/橡皮擦：鎖定捲動
+            c.canvas.style.touchAction = 'none';
+            c.canvas.style.cursor = 'crosshair';
+            c.ctx.globalCompositeOperation = t==='pen' ? 'source-over' : 'destination-out'; 
+            c.ctx.lineWidth = t==='pen' ? 4 : 25;
+        }
+    }
+
+    // 🚀【防誤觸核心】：復原上一步 (Undo)
+    function undoCanvas(i) {
+        const c = canvases[i];
+        if (c.history.length > 0) {
+            const img = new Image();
+            img.onload = () => {
+                c.ctx.clearRect(0, 0, c.canvas.width, c.canvas.height);
+                const prevMode = c.ctx.globalCompositeOperation;
+                c.ctx.globalCompositeOperation = 'source-over';
+                c.ctx.drawImage(img, 0, 0);
+                c.ctx.globalCompositeOperation = prevMode; // 恢復成原來的筆刷或橡皮擦狀態
+            };
+            img.src = c.history.pop();
+        }
     }
 
     function clearCanvas(i) {
-        const c = canvases[i]; c.ctx.clearRect(0, 0, c.canvas.width, c.canvas.height);
+        const c = canvases[i]; 
+        // 清空前也記錄一下歷史，以免按錯
+        c.history.push(c.canvas.toDataURL());
+        if (c.history.length > 10) c.history.shift();
+        
+        c.ctx.clearRect(0, 0, c.canvas.width, c.canvas.height);
     }
 
     async function gradeWithAI() {
