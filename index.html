@@ -55,13 +55,16 @@
         .text-ans-input { font-size: 22px; text-align: center; border: 2px dashed #94a3b8 !important; background: #fff; }
         .text-ans-input:focus { border-style: solid !important; border-color: var(--primary) !important; }
         
-        .canvas-container { background-color: #ffffff; background-image: repeating-linear-gradient(transparent, transparent 31px, #e2e8f0 31px, #e2e8f0 32px); background-size: 100% 32px; background-position: 0 10px; border: 2px solid #cbd5e1; margin: 10px 0; border-radius: 12px; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
-        canvas { width: 100%; height: 192px; display: block; touch-action: none; cursor: crosshair; }
+        .canvas-container { background-color: #ffffff; background-image: repeating-linear-gradient(transparent, transparent 31px, #e2e8f0 31px, #e2e8f0 32px); background-size: 100% 32px; background-position: 0 10px; border: 2px solid #cbd5e1; margin: 10px 0; border-radius: 12px; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); transition: height 0.3s ease; }
+        canvas { width: 100%; display: block; touch-action: none; cursor: crosshair; }
         
+        /* 延伸畫布的可愛按鈕 */
+        .resize-canvas-btn { background: #f8fafc; color: #64748b; border: 2px dashed #cbd5e1; padding: 8px 14px; font-size: 14px; border-radius: 10px; width: auto; margin: 0; box-shadow: none; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
+        .resize-canvas-btn:hover { background: #f1f5f9; border-color: #94a3b8; color: #475569; transform: scale(1.02); }
+
         .review-img { width: 100%; max-width: 500px; border: 2px dashed #cbd5e1; border-radius: 12px; display: block; margin: 10px auto; background: #fff;}
         .review-text-ans { font-size: 22px; font-weight: bold; color: #6C63FF; text-align: center; background: #f1f5f9; padding: 15px; border-radius: 12px; border: 2px dashed #cbd5e1; }
 
-        /* 升級版工具列排版 */
         .tools { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;}
         .tool-btn { flex: 1; min-width: 70px; padding: 12px 8px; font-size: 15px; background: #f1f5f9; border-radius: 10px; border: 2px solid transparent; color: #475569; font-weight: 800; box-shadow: none; margin-top: 0; }
         .tool-btn:hover { transform: none; background: #e2e8f0; }
@@ -120,7 +123,7 @@
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (防誤觸版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (彈性畫布版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <div style="display:flex; gap:10px; margin-top: 10px;">
@@ -439,7 +442,7 @@
         document.getElementById('qrDisplayArea').style.display = 'block';
     }
 
-    // 🚀【防誤觸核心】：渲染畫布與工具列
+    // 🚀【升級核心】：渲染畫布與工具列 (新增調整畫布高度按鈕)
     function renderQuiz() {
         window.history.replaceState({}, document.title, window.location.pathname);
         document.getElementById('parentZone').style.display = 'none';
@@ -462,7 +465,7 @@
             card.innerHTML = `
                 <div class="question-text"><span style="color:#94a3b8; font-size:18px;">Q${i+1}.</span><br>${q.question}</div>
                 <div class="input-group"><h4>⌨️ 鍵盤打字 Type your answer</h4><input type="text" id="textInput_${i}" class="text-ans-input" autocomplete="off" placeholder="..."></div>
-                <div class="input-group" style="background: #fff; border: 2px dashed #e2e8f0;">
+                <div class="input-group" style="background: #fff; border: 2px dashed #e2e8f0; padding-bottom:10px;">
                     <h4>✏️ 或是動手畫畫 Or draw it here</h4>
                     <div class="tools">
                         <button class="tool-btn active" id="pen_${i}" onclick="setTool(${i}, 'pen')">✏️ 畫筆</button>
@@ -472,6 +475,11 @@
                         <button class="tool-btn clear-btn" onclick="clearCanvas(${i})">🗑️ 清空</button>
                     </div>
                     <div class="canvas-container"><canvas id="canvas_${i}"></canvas></div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+                        <button class="resize-canvas-btn" onclick="resizeCanvas(${i}, 96)">➕ 畫布太小？往下加長！</button>
+                        <button class="resize-canvas-btn" onclick="resizeCanvas(${i}, -96)">➖ 縮短</button>
+                    </div>
                 </div>
                 <div class="feedback" id="f_${i}"></div>
             `;
@@ -482,13 +490,18 @@
     }
 
     function initCanvas(index) {
-        const canvas = document.getElementById(`canvas_${index}`); const ctx = canvas.getContext('2d'); const ratio = window.devicePixelRatio || 1;
+        const canvas = document.getElementById(`canvas_${index}`); 
+        const ctx = canvas.getContext('2d'); 
+        const ratio = window.devicePixelRatio || 1;
+        
+        // 設定初始高度為 6 行筆記本線 (32px * 6 = 192px)
+        canvas.style.height = '192px';
         const rect = canvas.parentElement.getBoundingClientRect();
-        canvas.width = rect.width * ratio; canvas.height = 192 * ratio; ctx.scale(ratio, ratio);
+        canvas.width = rect.width * ratio; 
+        canvas.height = 192 * ratio; 
+        ctx.scale(ratio, ratio);
         
         ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = 4; ctx.strokeStyle = "#1e293b";
-        
-        // 預設鎖定捲動 (可畫畫)
         canvas.style.touchAction = 'none'; 
         
         let drawing = false; let lx, ly; 
@@ -502,16 +515,15 @@
         };
         
         const start = (e) => { 
-            if (canvases[index].tool === 'pan') return; // 如果是滑動模式，直接放行原生捲動
+            if (canvases[index].tool === 'pan') return; 
             e.preventDefault(); 
             drawing = true; 
             
-            // 存入復原歷史 (記錄畫這一筆之前的狀態)
             canvases[index].history.push(canvas.toDataURL());
-            if (canvases[index].history.length > 10) canvases[index].history.shift(); // 最多記 10 步
+            if (canvases[index].history.length > 10) canvases[index].history.shift(); 
 
             const p = getXY(e); lx = p.x; ly = p.y; 
-            ctx.beginPath(); ctx.arc(lx, ly, ctx.lineWidth/2, 0, Math.PI*2); ctx.fill(); // 點一下也能畫點
+            ctx.beginPath(); ctx.arc(lx, ly, ctx.lineWidth/2, 0, Math.PI*2); ctx.fill(); 
         };
         
         const move = (e) => { 
@@ -523,21 +535,52 @@
         canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); canvas.addEventListener('mouseup', () => drawing=false); canvas.addEventListener('mouseout', () => drawing=false);
     }
 
-    // 🚀【防誤觸核心】：工具切換邏輯
+    // 🚀【新功能】：動態改變畫布高度並保留筆跡
+    window.resizeCanvas = function(i, changePx) {
+        const c = canvases[i];
+        let currentCssHeight = parseInt(c.canvas.style.height) || 192;
+        let newCssHeight = currentCssHeight + changePx;
+        
+        // 限制最小高度為 192px (6行)
+        if (newCssHeight < 192) newCssHeight = 192;
+        if (newCssHeight === currentCssHeight) return; 
+
+        // 1. 先把目前的筆跡拍下來存著
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = c.canvas.width;
+        tempCanvas.height = c.canvas.height;
+        tempCanvas.getContext('2d').drawImage(c.canvas, 0, 0);
+
+        // 2. 改變畫布大小 (這時候原本的畫布會被系統清空)
+        const ratio = window.devicePixelRatio || 1;
+        c.canvas.style.height = newCssHeight + 'px';
+        c.canvas.height = newCssHeight * ratio;
+
+        // 3. 把畫筆設定還原
+        c.ctx.scale(ratio, ratio);
+        c.ctx.lineCap = 'round'; c.ctx.lineJoin = 'round'; 
+        c.ctx.lineWidth = c.tool === 'pen' ? 4 : 25; 
+        c.ctx.strokeStyle = "#1e293b";
+        c.ctx.globalCompositeOperation = c.tool === 'pen' ? 'source-over' : 'destination-out';
+
+        // 4. 把剛剛拍下來的筆跡貼回新的畫布上
+        c.ctx.save();
+        c.ctx.setTransform(1, 0, 0, 1, 0, 0); // 確保貼回去的比例是 1:1，不會變形
+        c.ctx.drawImage(tempCanvas, 0, 0);
+        c.ctx.restore();
+    }
+
     function setTool(i, t) {
         const c = canvases[i]; c.tool = t;
         
-        // UI 按鈕切換
         document.getElementById(`pen_${i}`).classList.toggle('active', t==='pen'); 
         document.getElementById(`eraser_${i}`).classList.toggle('active', t==='eraser');
         document.getElementById(`pan_${i}`).classList.toggle('active-pan', t==='pan');
 
         if (t === 'pan') {
-            // 開啟滑動模式：允許原生捲動，不攔截 touch 事件
             c.canvas.style.touchAction = 'auto';
             c.canvas.style.cursor = 'grab';
         } else {
-            // 開啟畫筆/橡皮擦：鎖定捲動
             c.canvas.style.touchAction = 'none';
             c.canvas.style.cursor = 'crosshair';
             c.ctx.globalCompositeOperation = t==='pen' ? 'source-over' : 'destination-out'; 
@@ -545,7 +588,7 @@
         }
     }
 
-    // 🚀【防誤觸核心】：復原上一步 (Undo)
+    // 🚀【修復】：上一步在 iPad 上縮放變形的 Bug
     function undoCanvas(i) {
         const c = canvases[i];
         if (c.history.length > 0) {
@@ -554,8 +597,14 @@
                 c.ctx.clearRect(0, 0, c.canvas.width, c.canvas.height);
                 const prevMode = c.ctx.globalCompositeOperation;
                 c.ctx.globalCompositeOperation = 'source-over';
+                
+                // 鎖定縮放比例再貼上圖層，確保畫質與位置精準
+                c.ctx.save();
+                c.ctx.setTransform(1, 0, 0, 1, 0, 0);
                 c.ctx.drawImage(img, 0, 0);
-                c.ctx.globalCompositeOperation = prevMode; // 恢復成原來的筆刷或橡皮擦狀態
+                c.ctx.restore();
+                
+                c.ctx.globalCompositeOperation = prevMode;
             };
             img.src = c.history.pop();
         }
@@ -563,10 +612,8 @@
 
     function clearCanvas(i) {
         const c = canvases[i]; 
-        // 清空前也記錄一下歷史，以免按錯
-        c.history.push(c.canvas.toDataURL());
+        c.history.push(c.canvas.toDataURL()); // 清空前也防呆存一下
         if (c.history.length > 10) c.history.shift();
-        
         c.ctx.clearRect(0, 0, c.canvas.width, c.canvas.height);
     }
 
