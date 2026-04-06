@@ -40,6 +40,7 @@
         .share-small-btn { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
         .view-ans-btn { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
         .del-btn { background: #fee2e2; color: #ef4444; }
+        .del-btn:hover { background: #fecaca; color: #b91c1c; }
         
         .view-detail-btn { background: #e2e8f0; color: #475569; padding: 6px 12px; font-size: 14px; border-radius: 8px; margin-left: 10px; width: auto; display: inline-block; box-shadow: none;}
         .view-detail-btn:hover { background: #cbd5e1; transform: scale(1.05); }
@@ -130,7 +131,7 @@
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (防斷線壓縮版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (雙語詳解無死角版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <div style="display:flex; gap:10px; margin-top: 10px;">
@@ -146,11 +147,12 @@
         
         <h3>📝 建立新考卷 Create a New Quiz</h3>
         
-        <label class="setting-label">🌐 選擇輸出語言 (Language):</label>
+        <label class="setting-label">🌐 選擇題目語言 (Question Language):</label>
         <select id="langSelect">
             <option value="Traditional Chinese (繁體中文)">繁體中文 (Traditional Chinese)</option>
             <option value="English">English</option>
         </select>
+        <div style="font-size: 13px; color: #64748b; margin-top: 4px;">*註：無論題目選哪種語言，解答與解析皆會自動附上「中英雙語」。</div>
 
         <label class="setting-label">📎 上傳參考照片/PDF (自動壓縮防當機):</label>
         <div class="file-upload-wrapper">
@@ -162,7 +164,7 @@
         <textarea id="promptText" placeholder="例如：請出 3 題計算三角形角度的題目，並附上圖形。或是直接把文章貼在這邊讓它出題..."></textarea>
         
         <button onclick="generateQuiz()" id="genBtn">🚀 1. 綜合產生考卷 Generate Questions</button>
-        <p id="loading">✨ AI 正在撰寫題目與詳細解答中... AI is processing...</p>
+        <p id="loading">✨ AI 正在撰寫題目與雙語詳解中... AI is processing...</p>
 
         <div id="previewZone" style="display:none; margin-top:25px; background:#fff; padding:20px; border-radius:16px; border: 2px solid #e2e8f0;">
             <h3 style="margin-top:0; color: #4a5568;">📋 考卷預覽 Quiz Preview <span style="display:inline-block; background:#dcfce7; color:#166534; padding:3px 10px; border-radius:15px; font-size:12px; margin-left:10px;">💾 已存入題庫</span></h3>
@@ -253,7 +255,6 @@
     let alarmTriggered = false;
     let audioCtx = null; 
 
-    // 🚀 核心更新：載入網頁時，如果網址中有 ?c= 參數，代表是使用 LZString 壓縮過的新版網址
     window.onload = function() {
         const savedKey = localStorage.getItem('geminiApiKey');
         const savedLang = localStorage.getItem('quizLanguage');
@@ -262,7 +263,7 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const dataParam = urlParams.get('d');
-        const compressedParam = urlParams.get('c'); // 支援新版壓縮網址
+        const compressedParam = urlParams.get('c'); 
 
         if (compressedParam) {
             try {
@@ -388,17 +389,17 @@
         document.getElementById('genBtn').disabled = true; document.getElementById('loading').style.display = 'block';
         document.getElementById('previewZone').style.display = 'none';
 
-        let finalInstruction = prompt;
-
+        // 🚀 強制設定：解答與解析必須中英雙語並陳
         const sysPrompt = `You are an expert educational assistant. Create a quiz based strictly on the provided references and user instructions. 
         MUST output strictly as a JSON array of objects with keys: "question", "answer", "explanation", and optionally "svg". 
-        - "answer": The final correct answer.
-        - "explanation": Detailed step-by-step calculation or reasoning.
+        - "question": The question text in exactly ${lang}.
+        - "answer": The final correct answer. MUST be provided in BOTH Traditional Chinese and English (e.g., "三角形 / Triangle").
+        - "explanation": Detailed step-by-step calculation or reasoning. MUST be provided in BOTH Traditional Chinese and English, clearly separated (e.g., "【中文解析】... \\n\\n【English Explanation】...").
         If a geometric shape, chart, or diagram is necessary, provide valid inline HTML SVG code as a string in the "svg" key. 
         CRITICAL SVG RULES: The SVG MUST contain a proper 'viewBox' attribute (e.g., viewBox="0 0 300 300"). DO NOT include hardcoded 'width' or 'height' attributes in the <svg> tag. Use clear contrasting colors.
-        Output language MUST be exactly: ${lang}. Return ONLY the pure JSON array. Do not include introductory text.`;
+        Return ONLY the pure JSON array. Do not include introductory text.`;
         
-        let apiParts = [{ text: sysPrompt + "\n\nUser Instructions:\n" + finalInstruction }];
+        let apiParts = [{ text: sysPrompt + "\n\nUser Instructions:\n" + prompt }];
         
         try {
             if (fileInput.files.length > 0) {
@@ -408,7 +409,7 @@
                     apiParts.push({ inline_data: { mime_type: fileData.mime_type, data: fileData.data } });
                 }
             } else {
-                document.getElementById('loading').innerText = "✨ AI 正在施展魔法撰寫題目與詳解... AI is generating...";
+                document.getElementById('loading').innerText = "✨ AI 正在施展魔法撰寫題目與雙語詳解... AI is generating...";
             }
 
             const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
@@ -462,7 +463,6 @@
             else return;
         }
 
-        // 🚀 核心更新：使用 LZString 壓縮網址，並改用 ?c= 參數
         const payload = { title: titleToShare, data: dataToShare };
         const jsonStr = JSON.stringify(payload);
         const compressedData = LZString.compressToEncodedURIComponent(jsonStr);
@@ -831,7 +831,7 @@
                     <div style="text-align:left; max-height: 60vh; overflow-y:auto; padding-right:10px;">`;
         
         targetQuiz.quizData.forEach((q, i) => {
-            let explanationHtml = q.explanation ? `<div style="color:#475569; font-size:15px; margin-top:8px; padding-top:8px; border-top:1px dashed #cbd5e1;"><b>💡 解析：</b><br>${q.explanation.replace(/\n/g, '<br>')}</div>` : '';
+            let explanationHtml = q.explanation ? `<div style="color:#475569; font-size:15px; margin-top:8px; padding-top:8px; border-top:1px dashed #cbd5e1;"><b>💡 雙語解析：</b><br>${q.explanation.replace(/\n/g, '<br>')}</div>` : '';
             
             html += `
                 <div style="margin-bottom:15px; padding:15px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0;">
@@ -893,7 +893,9 @@
         document.getElementById('translateStatusText').innerText = hasChinese ? "Converting quiz to English..." : "正在將考卷翻譯為繁體中文...";
         document.getElementById('translateModal').style.display = 'flex';
 
-        const sysPrompt = `Translate the following quiz into ${targetLanguage}. Maintain the exact JSON array structure with "question", "answer", "explanation", and "svg" keys. Do NOT wrap in markdown \`\`\`json. Return ONLY pure JSON.`;
+        // 🚀 更新翻譯指令：確保雙語解答與解析不被破壞
+        const sysPrompt = `You are translating a quiz. For the "question" field, translate it into exactly ${targetLanguage}. For the "answer" and "explanation" fields, you MUST provide them in BOTH Traditional Chinese and English, regardless of the target language. 
+        Maintain the exact JSON array structure with "question", "answer", "explanation", and "svg" keys. Do NOT wrap in markdown \`\`\`json. Return ONLY pure JSON.`;
         
         try {
             const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
