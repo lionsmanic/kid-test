@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI Smart Quiz Hub Pro Max</title>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #6C63FF; --secondary: #FF6584; --bg: #F4F7FB; --text: #2D3748; --card-bg: #FFFFFF; }
@@ -129,7 +130,7 @@
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (極簡出題版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (防斷線壓縮版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <div style="display:flex; gap:10px; margin-top: 10px;">
@@ -158,7 +159,7 @@
         </div>
 
         <label class="setting-label">🎯 出題綜合指令 (Topic & Instructions):</label>
-        <textarea id="promptText" placeholder="例如：請出 3 題計算三角形角度的題目。或是直接把長篇文章貼在這邊讓 AI 出題..."></textarea>
+        <textarea id="promptText" placeholder="例如：請出 3 題計算三角形角度的題目，並附上圖形。或是直接把文章貼在這邊讓它出題..."></textarea>
         
         <button onclick="generateQuiz()" id="genBtn">🚀 1. 綜合產生考卷 Generate Questions</button>
         <p id="loading">✨ AI 正在撰寫題目與詳細解答中... AI is processing...</p>
@@ -220,9 +221,6 @@
             <span style="font-size: 24px;">🔗</span> 
             <div style="text-align: left;"><div style="font-weight: 800;">複製考卷連結</div><div style="font-size: 12px; font-weight: normal;">可在 iPad 貼上，或自行傳送</div></div>
         </button>
-        <div id="qrDisplayArea" style="display:none; margin-top: 15px;">
-            <img id="shareQrImage" src="" style="width: 100%; border: 4px solid #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        </div>
         <button class="modal-close" onclick="closeModal('shareModal')">關閉 Close</button>
     </div>
 </div>
@@ -255,6 +253,7 @@
     let alarmTriggered = false;
     let audioCtx = null; 
 
+    // 🚀 核心更新：載入網頁時，如果網址中有 ?c= 參數，代表是使用 LZString 壓縮過的新版網址
     window.onload = function() {
         const savedKey = localStorage.getItem('geminiApiKey');
         const savedLang = localStorage.getItem('quizLanguage');
@@ -263,14 +262,25 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const dataParam = urlParams.get('d');
-        if (dataParam) {
+        const compressedParam = urlParams.get('c'); // 支援新版壓縮網址
+
+        if (compressedParam) {
+            try {
+                const jsonStr = LZString.decompressFromEncodedURIComponent(compressedParam);
+                const payload = JSON.parse(jsonStr);
+                currentQuizData = payload.data;
+                currentQuizId = "quiz_" + Date.now().toString(); 
+                saveQuizToLibrary(currentQuizId, payload.title || "傳送過來的測驗", currentQuizData);
+                renderQuiz();
+            } catch (e) { alert("讀取壓縮考卷失敗 Failed to load compressed quiz data!"); }
+        } else if (dataParam) {
             try {
                 const payload = JSON.parse(decodeURIComponent(escape(window.atob(dataParam))));
                 currentQuizData = payload.data;
                 currentQuizId = "quiz_" + Date.now().toString(); 
                 saveQuizToLibrary(currentQuizId, payload.title || "傳送過來的測驗", currentQuizData);
                 renderQuiz();
-            } catch (e) { alert("Failed to load quiz data!"); }
+            } catch (e) { alert("讀取舊版考卷失敗 Failed to load quiz data!"); }
         }
     };
 
@@ -296,13 +306,22 @@
         try {
             const url = new URL(decodedText);
             const dataParam = url.searchParams.get('d');
-            if (dataParam) {
+            const compressedParam = url.searchParams.get('c');
+            
+            if (compressedParam) {
+                const jsonStr = LZString.decompressFromEncodedURIComponent(compressedParam);
+                const payload = JSON.parse(jsonStr);
+                currentQuizData = payload.data;
+                currentQuizId = "quiz_" + Date.now().toString(); 
+                saveQuizToLibrary(currentQuizId, payload.title || "傳送過來的測驗", currentQuizData);
+                renderQuiz();
+            } else if (dataParam) {
                 const payload = JSON.parse(decodeURIComponent(escape(window.atob(dataParam))));
                 currentQuizData = payload.data;
                 currentQuizId = "quiz_" + Date.now().toString(); 
                 saveQuizToLibrary(currentQuizId, payload.title || "傳送過來的測驗", currentQuizData);
                 renderQuiz();
-            } else { alert("這不是有效的考卷 QR Code！"); }
+            } else { alert("這不是有效的考卷條碼！"); }
         } catch(e) { alert("無效的條碼格式。"); }
     }
 
@@ -314,7 +333,6 @@
 
     function closeModal(id) { 
         document.getElementById(id).style.display = 'none'; 
-        if (id === 'shareModal') document.getElementById('qrDisplayArea').style.display = 'none';
     }
 
     function processAndCompressFile(file) {
@@ -444,12 +462,12 @@
             else return;
         }
 
+        // 🚀 核心更新：使用 LZString 壓縮網址，並改用 ?c= 參數
         const payload = { title: titleToShare, data: dataToShare };
         const jsonStr = JSON.stringify(payload);
-        const encodedData = window.btoa(unescape(encodeURIComponent(jsonStr)));
-        currentShareUrl = window.location.origin + window.location.pathname + "?d=" + encodedData;
+        const compressedData = LZString.compressToEncodedURIComponent(jsonStr);
+        currentShareUrl = window.location.origin + window.location.pathname + "?c=" + compressedData;
 
-        document.getElementById('qrDisplayArea').style.display = 'none';
         document.getElementById('shareModal').style.display = 'flex';
     }
 
@@ -461,14 +479,9 @@
 
     function triggerCopyLink() {
         navigator.clipboard.writeText(currentShareUrl).then(() => {
-            alert("✅ 考卷連結已複製！\n您可以直接在 iPad 上貼上這個連結。");
+            alert("✅ 考卷連結已成功壓縮並複製！\n這個短網址可以安全地在 iPad 貼上或透過 Line 傳送，不再怕被截斷囉！");
             closeModal('shareModal');
         }).catch(err => { alert("複製失敗，請重試。"); });
-    }
-
-    function triggerShowQR() {
-        document.getElementById('shareQrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(currentShareUrl)}`;
-        document.getElementById('qrDisplayArea').style.display = 'block';
     }
 
     function startTimer() {
