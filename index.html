@@ -16,11 +16,10 @@
         .history-section { background: #f0fdf4; border-color: #bbf7d0; display: none; }
         .review-section { background: #fdf2f8; border-color: #fbcfe8; display: none; }
         
-        input[type="password"], input[type="text"], textarea, select, input[type="file"] { width: 100%; padding: 14px; margin: 8px 0 16px 0; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; font-family: inherit; transition: border-color 0.3s; }
+        input[type="password"], input[type="text"], input[type="number"], textarea, select, input[type="file"] { width: 100%; padding: 14px; margin: 8px 0 16px 0; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; font-family: inherit; transition: border-color 0.3s; }
         input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); }
         textarea { height: 120px; resize: vertical; }
         .transcript-box { height: 180px; background-color: #fefce8; border-color: #fde047; }
-        .transcript-box:focus { border-color: #eab308; }
         
         button { background: linear-gradient(135deg, #6C63FF 0%, #483D8B 100%); color: white; padding: 16px; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; font-weight: 800; width: 100%; margin-top: 10px; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3); }
         button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4); }
@@ -40,10 +39,9 @@
         .translate-btn { background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); }
         .share-small-btn { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
         .del-btn { background: #fee2e2; color: #ef4444; }
-        .del-btn:hover { background: #fecaca; color: #b91c1c; }
         
         .view-detail-btn { background: #e2e8f0; color: #475569; padding: 6px 12px; font-size: 14px; border-radius: 8px; margin-left: 10px; width: auto; display: inline-block; box-shadow: none;}
-        .view-detail-btn:hover { background: #cbd5e1; box-shadow: none; transform: scale(1.05); }
+        .view-detail-btn:hover { background: #cbd5e1; transform: scale(1.05); }
 
         #scanner-container { display: none; margin-top: 15px; border: 3px solid #F59E0B; border-radius: 16px; overflow: hidden; background: #fff;}
 
@@ -71,9 +69,7 @@
         .tool-btn.active { background: #ebf4ff; color: var(--primary); border-color: var(--primary); }
         .tool-btn.active-pan { background: #fffbeb; color: #d97706; border-color: #f59e0b; }
         .undo-btn { background: #f3e8ff; color: #7e22ce; }
-        .undo-btn:hover { background: #e9d5ff; }
         .clear-btn { background: #fee2e2; color: #ef4444; }
-        .clear-btn:hover { background: #fecaca; }
         
         .feedback { padding: 20px; margin-top: 20px; border-radius: 16px; display: none; font-weight: bold; text-align: center; font-size: 18px; line-height: 1.6; animation: popIn 0.4s ease-out;}
         @keyframes popIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -89,6 +85,7 @@
         .attempt-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #e2e8f0; font-size: 16px;}
         .attempt-item:last-child { border-bottom: none; }
         .attempt-score { font-weight: 800; color: var(--secondary); font-size: 18px; }
+        .attempt-time { background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-right: 10px; }
         
         .setting-label { font-weight: 800; color: #4a5568; display: block; margin-top: 20px; font-size: 16px; }
         .file-upload-wrapper { background: #fff; padding: 15px; border-radius: 12px; border: 2px dashed #cbd5e1; text-align: center; margin-bottom: 16px; }
@@ -105,17 +102,23 @@
         
         .share-option-btn { background: #f8fafc; color: #1e293b; border: 2px solid #e2e8f0; padding: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; box-shadow: none;}
         .share-option-btn:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-2px); }
-        .share-option-btn.airdrop { color: #2563EB; border-color: #bfdbfe; background: #eff6ff;}
-        .share-option-btn.copy { color: #059669; border-color: #bbf7d0; background: #f0fdf4;}
+
+        /* 🚀 智慧計時器面板區 */
+        .timer-panel { background: #fff7ed; border: 3px solid #fbbf24; padding: 15px 20px; border-radius: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.1); }
+        .timer-display { font-size: 28px; font-weight: 900; color: #d97706; font-family: monospace; display: flex; align-items: center; gap: 10px;}
+        .alarm-setup { display: flex; align-items: center; gap: 8px; background: #fff; padding: 8px 12px; border-radius: 12px; border: 2px solid #fde68a;}
+        .alarm-setup input { width: 60px; padding: 6px; margin: 0; border: 1px solid #cbd5e1; font-size: 16px; text-align: center;}
+        .alarm-setup button { margin: 0; padding: 6px 12px; font-size: 14px; width: auto; background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);}
 
         @media (max-width: 768px) {
-            body { padding: 10px; } .container { padding: 20px; border-radius: 16px; } h2 { font-size: 22px; } h3 { font-size: 18px; }
-            .section { padding: 15px; } .question-card { padding: 15px; } .question-text { font-size: 20px; } .input-group { padding: 15px; }
-            .grade-btn { font-size: 20px; padding: 15px; } .history-header { flex-direction: column; gap: 10px; }
+            body { padding: 10px; } .container { padding: 20px; border-radius: 16px; }
+            .section { padding: 15px; } .question-card { padding: 15px; } 
+            .timer-panel { flex-direction: column; gap: 15px; align-items: stretch; text-align: center; }
+            .alarm-setup { justify-content: center; }
         }
         @media (max-width: 480px) {
             .card-actions { grid-template-columns: 1fr; gap: 8px; } button { font-size: 16px; padding: 14px; } 
-            .tool-btn { font-size: 13px; padding: 10px 5px; } .history-title { font-size: 18px; } .attempt-item { flex-direction: column; align-items: flex-start; gap: 8px;}
+            .tool-btn { font-size: 13px; padding: 10px 5px; } .attempt-item { flex-direction: column; align-items: flex-start; gap: 8px;}
         }
     </style>
 </head>
@@ -123,7 +126,7 @@
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (彈性畫布版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (專注配速版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <div style="display:flex; gap:10px; margin-top: 10px;">
@@ -146,7 +149,7 @@
         </select>
 
         <label class="setting-label">📚 貼上長篇文章或影片字幕 (Text / Transcript):</label>
-        <textarea id="longTextData" class="transcript-box" placeholder="請在此貼上「影片字幕」或「網路文章內容」，這樣 AI 出題才會精準喔！"></textarea>
+        <textarea id="longTextData" class="transcript-box" placeholder="請在此貼上「影片字幕」或「網路文章內容」，讓 AI 幫您出題！"></textarea>
 
         <label class="setting-label">📎 上傳參考照片/PDF (自動壓縮防當機):</label>
         <div class="file-upload-wrapper">
@@ -172,7 +175,20 @@
     </div>
 
     <div id="studentZone" class="section student-section">
-        <h1 id="quizTitle" style="color: var(--secondary); font-size: 28px;">⭐ 知識挑戰 Mission Start ⭐</h1>
+        <h1 id="quizTitle" style="color: var(--secondary); font-size: 28px; margin-top:0;">⭐ 知識挑戰 Mission Start ⭐</h1>
+        
+        <div class="timer-panel">
+            <div class="timer-display">
+                ⏱️ <span id="timeElapsed">00:00</span>
+            </div>
+            <div class="alarm-setup">
+                <span>⏰ 目標時間:</span>
+                <input type="number" id="alarmMinutes" placeholder="分" min="1" max="60"> 
+                <span>分鐘</span>
+                <button onclick="setAlarm()">設定</button>
+            </div>
+        </div>
+
         <div id="quizContainer"></div>
         <button id="gradeBtn" class="grade-btn" onclick="gradeWithAI()">🤖 寫完了！請 AI 老師批改</button>
         <p id="gradingStatus">🔍 AI 老師正在光速閱卷中...</p>
@@ -196,26 +212,17 @@
     <div class="modal-content" style="border: 4px solid #10B981;">
         <h3 style="margin-top:0; color: #059669;">📤 傳送考卷給小朋友</h3>
         <p style="color:#64748b; font-size: 14px; margin-bottom: 20px;">請選擇最方便的傳送方式：</p>
-        
-        <button class="share-option-btn airdrop" onclick="triggerNativeShare()">
+        <button class="share-option-btn" style="color: #2563EB; border-color: #bfdbfe; background: #eff6ff;" onclick="triggerNativeShare()">
             <span style="font-size: 24px;">✈️</span> 
             <div style="text-align: left;"><div style="font-weight: 800;">AirDrop / 系統分享</div><div style="font-size: 12px; font-weight: normal;">直接傳送至附近的 iPad 或 Line</div></div>
         </button>
-        
-        <button class="share-option-btn copy" onclick="triggerCopyLink()">
+        <button class="share-option-btn" style="color: #059669; border-color: #bbf7d0; background: #f0fdf4;" onclick="triggerCopyLink()">
             <span style="font-size: 24px;">🔗</span> 
             <div style="text-align: left;"><div style="font-weight: 800;">複製考卷連結</div><div style="font-size: 12px; font-weight: normal;">可在 iPad 貼上，或自行傳送</div></div>
         </button>
-        
-        <button class="share-option-btn" onclick="triggerShowQR()" style="border-color: #fca5a5; color: #e11d48; background: #fef2f2;">
-            <span style="font-size: 24px;">📱</span> 
-            <div style="text-align: left;"><div style="font-weight: 800;">顯示 QR Code</div><div style="font-size: 12px; font-weight: normal;">(注意：題目過多時可能無法掃描)</div></div>
-        </button>
-
         <div id="qrDisplayArea" style="display:none; margin-top: 15px;">
             <img id="shareQrImage" src="" style="width: 100%; border: 4px solid #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
         </div>
-
         <button class="modal-close" onclick="closeModal('shareModal')">關閉 Close</button>
     </div>
 </div>
@@ -234,6 +241,13 @@
     let currentShareUrl = ""; 
     let canvases = [];
     let html5QrcodeScanner = null;
+
+    // ⏱️ 計時器全域變數
+    let timerInterval = null;
+    let startTime = 0;
+    let alarmTimeSeconds = 0;
+    let alarmTriggered = false;
+    let audioCtx = null; // 用來發出嗶嗶聲的音效引擎
 
     window.onload = function() {
         const savedKey = localStorage.getItem('geminiApiKey');
@@ -260,9 +274,7 @@
         fileListDiv.innerHTML = '';
         if (fileInput.files.length > 0) {
             let html = '<b>已選擇的檔案：</b><br>';
-            for (let i = 0; i < fileInput.files.length; i++) {
-                html += `<span class="file-item">📄 ${fileInput.files[i].name}</span>`;
-            }
+            for (let i = 0; i < fileInput.files.length; i++) html += `<span class="file-item">📄 ${fileInput.files[i].name}</span>`;
             fileListDiv.innerHTML = html;
         }
     }
@@ -402,7 +414,6 @@
 
     function openShareModal(sourceId) {
         let titleToShare = ""; let dataToShare = [];
-
         if (sourceId === 'current') {
             const langPrefix = document.getElementById('langSelect').value.includes('中文') ? '[TW]' : '[EN]';
             let rawTitle = document.getElementById('promptText').value.trim() || "AI 專屬測驗";
@@ -426,23 +437,91 @@
 
     function triggerNativeShare() {
         if (navigator.share) {
-            navigator.share({ title: '快來挑戰新考卷！', text: '這是一份為你準備的專屬考卷，點擊連結立刻開始測驗：', url: currentShareUrl }).catch(console.error);
+            navigator.share({ title: '快來挑戰新考卷！', text: '這是一份為你準備的專屬考卷，點擊立刻開始測驗：', url: currentShareUrl }).catch(console.error);
         } else { alert("⚠️ 您的裝置目前不支援系統分享，請改用「複製連結」喔！"); }
     }
 
     function triggerCopyLink() {
         navigator.clipboard.writeText(currentShareUrl).then(() => {
-            alert("✅ 考卷專屬連結已複製！\n您可以直接在 iPad 上貼上這個連結。");
+            alert("✅ 考卷連結已複製！\n您可以直接在 iPad 上貼上這個連結。");
             closeModal('shareModal');
         }).catch(err => { alert("複製失敗，請重試。"); });
     }
 
-    function triggerShowQR() {
-        document.getElementById('shareQrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(currentShareUrl)}`;
-        document.getElementById('qrDisplayArea').style.display = 'block';
+    // 🚀【新功能】：計時器與鬧鐘系統
+    function startTimer() {
+        startTime = Date.now();
+        alarmTimeSeconds = 0;
+        alarmTriggered = false;
+        document.getElementById('timeElapsed').innerText = "00:00";
+        document.getElementById('alarmMinutes').value = "";
+        
+        if(timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimer, 1000);
     }
 
-    // 🚀【升級核心】：渲染畫布與工具列 (新增調整畫布高度按鈕)
+    function updateTimer() {
+        let elapsed = Math.floor((Date.now() - startTime) / 1000);
+        let m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        let s = String(elapsed % 60).padStart(2, '0');
+        document.getElementById('timeElapsed').innerText = `${m}:${s}`;
+
+        // 檢查鬧鐘是否到達
+        if(alarmTimeSeconds > 0 && !alarmTriggered && elapsed >= alarmTimeSeconds) {
+            alarmTriggered = true;
+            playAlarmSound();
+            // 延遲一下讓聲音出來再彈出提示
+            setTimeout(() => {
+                alert("⏰ 叮鈴鈴！您設定的目標時間到囉！趕快收尾交卷吧！");
+            }, 100);
+        }
+    }
+
+    function setAlarm() {
+        let mins = parseInt(document.getElementById('alarmMinutes').value);
+        if(mins > 0) {
+            alarmTimeSeconds = mins * 60;
+            
+            // 初始化並喚醒 Web Audio API (必須在使用者點擊按鈕時觸發)
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            alert(`✅ 鬧鐘設定成功！將於 ${mins} 分鐘後提醒您。`);
+        } else {
+            alert("請輸入大於 0 的分鐘數喔！");
+        }
+    }
+
+    function playAlarmSound() {
+        if (!audioCtx) return;
+        
+        // 產生急促的嗶嗶聲 (3連音)
+        const playBeep = (startTime) => {
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime); // 較清脆的高音
+            
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + 0.2);
+            
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            osc.start(startTime);
+            osc.stop(startTime + 0.2);
+        };
+
+        let now = audioCtx.currentTime;
+        playBeep(now);
+        playBeep(now + 0.3);
+        playBeep(now + 0.6);
+    }
+
     function renderQuiz() {
         window.history.replaceState({}, document.title, window.location.pathname);
         document.getElementById('parentZone').style.display = 'none';
@@ -455,6 +534,9 @@
         
         document.getElementById('gradeBtn').style.display = 'block'; document.getElementById('gradeBtn').disabled = false;
         document.getElementById('gradingStatus').style.display = 'none';
+
+        // 啟動計時器
+        startTimer();
 
         const container = document.getElementById('quizContainer');
         container.innerHTML = ''; canvases = [];
@@ -477,8 +559,8 @@
                     <div class="canvas-container"><canvas id="canvas_${i}"></canvas></div>
                     
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
-                        <button class="resize-canvas-btn" onclick="resizeCanvas(${i}, 96)">➕ 畫布太小？往下加長！</button>
-                        <button class="resize-canvas-btn" onclick="resizeCanvas(${i}, -96)">➖ 縮短</button>
+                        <button class="resize-canvas-btn" onclick="resizeCanvas(${i}, 192)">➕ 畫布太小？往下加長！</button>
+                        <button class="resize-canvas-btn" onclick="resizeCanvas(${i}, -192)">➖ 縮短</button>
                     </div>
                 </div>
                 <div class="feedback" id="f_${i}"></div>
@@ -490,120 +572,68 @@
     }
 
     function initCanvas(index) {
-        const canvas = document.getElementById(`canvas_${index}`); 
-        const ctx = canvas.getContext('2d'); 
-        const ratio = window.devicePixelRatio || 1;
-        
-        // 設定初始高度為 6 行筆記本線 (32px * 6 = 192px)
-        canvas.style.height = '192px';
+        const canvas = document.getElementById(`canvas_${index}`); const ctx = canvas.getContext('2d'); const ratio = window.devicePixelRatio || 1;
+        canvas.style.height = '192px'; // 預設 6 行
         const rect = canvas.parentElement.getBoundingClientRect();
-        canvas.width = rect.width * ratio; 
-        canvas.height = 192 * ratio; 
-        ctx.scale(ratio, ratio);
+        canvas.width = rect.width * ratio; canvas.height = 192 * ratio; ctx.scale(ratio, ratio);
         
         ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = 4; ctx.strokeStyle = "#1e293b";
         canvas.style.touchAction = 'none'; 
+        let drawing = false; let lx, ly; canvases[index] = { canvas, ctx, tool: 'pen', history: [] };
         
-        let drawing = false; let lx, ly; 
-        canvases[index] = { canvas, ctx, tool: 'pen', history: [] };
-        
-        const getXY = (e) => { 
-            const r = canvas.getBoundingClientRect(); 
-            const cx = e.touches ? e.touches[0].clientX : e.clientX; 
-            const cy = e.touches ? e.touches[0].clientY : e.clientY; 
-            return { x: cx - r.left, y: cy - r.top }; 
-        };
-        
+        const getXY = (e) => { const r = canvas.getBoundingClientRect(); const cx = e.touches ? e.touches[0].clientX : e.clientX; const cy = e.touches ? e.touches[0].clientY : e.clientY; return { x: cx - r.left, y: cy - r.top }; };
         const start = (e) => { 
             if (canvases[index].tool === 'pan') return; 
-            e.preventDefault(); 
-            drawing = true; 
-            
+            e.preventDefault(); drawing = true; 
             canvases[index].history.push(canvas.toDataURL());
             if (canvases[index].history.length > 10) canvases[index].history.shift(); 
-
-            const p = getXY(e); lx = p.x; ly = p.y; 
-            ctx.beginPath(); ctx.arc(lx, ly, ctx.lineWidth/2, 0, Math.PI*2); ctx.fill(); 
+            const p = getXY(e); lx = p.x; ly = p.y; ctx.beginPath(); ctx.arc(lx, ly, ctx.lineWidth/2, 0, Math.PI*2); ctx.fill(); 
         };
-        
-        const move = (e) => { 
-            if(!drawing || canvases[index].tool === 'pan') return; 
-            e.preventDefault(); const p = getXY(e); ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(p.x, p.y); ctx.stroke(); lx = p.x; ly = p.y; 
-        };
+        const move = (e) => { if(!drawing || canvases[index].tool === 'pan') return; e.preventDefault(); const p = getXY(e); ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(p.x, p.y); ctx.stroke(); lx = p.x; ly = p.y; };
         
         canvas.addEventListener('touchstart', start, {passive: false}); canvas.addEventListener('touchmove', move, {passive: false}); canvas.addEventListener('touchend', () => drawing=false);
         canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); canvas.addEventListener('mouseup', () => drawing=false); canvas.addEventListener('mouseout', () => drawing=false);
     }
 
-    // 🚀【新功能】：動態改變畫布高度並保留筆跡
     window.resizeCanvas = function(i, changePx) {
         const c = canvases[i];
         let currentCssHeight = parseInt(c.canvas.style.height) || 192;
         let newCssHeight = currentCssHeight + changePx;
         
-        // 限制最小高度為 192px (6行)
         if (newCssHeight < 192) newCssHeight = 192;
         if (newCssHeight === currentCssHeight) return; 
 
-        // 1. 先把目前的筆跡拍下來存著
         const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = c.canvas.width;
-        tempCanvas.height = c.canvas.height;
+        tempCanvas.width = c.canvas.width; tempCanvas.height = c.canvas.height;
         tempCanvas.getContext('2d').drawImage(c.canvas, 0, 0);
 
-        // 2. 改變畫布大小 (這時候原本的畫布會被系統清空)
         const ratio = window.devicePixelRatio || 1;
         c.canvas.style.height = newCssHeight + 'px';
         c.canvas.height = newCssHeight * ratio;
 
-        // 3. 把畫筆設定還原
         c.ctx.scale(ratio, ratio);
         c.ctx.lineCap = 'round'; c.ctx.lineJoin = 'round'; 
-        c.ctx.lineWidth = c.tool === 'pen' ? 4 : 25; 
-        c.ctx.strokeStyle = "#1e293b";
+        c.ctx.lineWidth = c.tool === 'pen' ? 4 : 25; c.ctx.strokeStyle = "#1e293b";
         c.ctx.globalCompositeOperation = c.tool === 'pen' ? 'source-over' : 'destination-out';
 
-        // 4. 把剛剛拍下來的筆跡貼回新的畫布上
-        c.ctx.save();
-        c.ctx.setTransform(1, 0, 0, 1, 0, 0); // 確保貼回去的比例是 1:1，不會變形
-        c.ctx.drawImage(tempCanvas, 0, 0);
-        c.ctx.restore();
+        c.ctx.save(); c.ctx.setTransform(1, 0, 0, 1, 0, 0); c.ctx.drawImage(tempCanvas, 0, 0); c.ctx.restore();
     }
 
     function setTool(i, t) {
         const c = canvases[i]; c.tool = t;
-        
-        document.getElementById(`pen_${i}`).classList.toggle('active', t==='pen'); 
-        document.getElementById(`eraser_${i}`).classList.toggle('active', t==='eraser');
-        document.getElementById(`pan_${i}`).classList.toggle('active-pan', t==='pan');
-
-        if (t === 'pan') {
-            c.canvas.style.touchAction = 'auto';
-            c.canvas.style.cursor = 'grab';
-        } else {
-            c.canvas.style.touchAction = 'none';
-            c.canvas.style.cursor = 'crosshair';
-            c.ctx.globalCompositeOperation = t==='pen' ? 'source-over' : 'destination-out'; 
-            c.ctx.lineWidth = t==='pen' ? 4 : 25;
-        }
+        document.getElementById(`pen_${i}`).classList.toggle('active', t==='pen'); document.getElementById(`eraser_${i}`).classList.toggle('active', t==='eraser'); document.getElementById(`pan_${i}`).classList.toggle('active-pan', t==='pan');
+        if (t === 'pan') { c.canvas.style.touchAction = 'auto'; c.canvas.style.cursor = 'grab'; } 
+        else { c.canvas.style.touchAction = 'none'; c.canvas.style.cursor = 'crosshair'; c.ctx.globalCompositeOperation = t==='pen' ? 'source-over' : 'destination-out'; c.ctx.lineWidth = t==='pen' ? 4 : 25; }
     }
 
-    // 🚀【修復】：上一步在 iPad 上縮放變形的 Bug
     function undoCanvas(i) {
         const c = canvases[i];
         if (c.history.length > 0) {
             const img = new Image();
             img.onload = () => {
                 c.ctx.clearRect(0, 0, c.canvas.width, c.canvas.height);
-                const prevMode = c.ctx.globalCompositeOperation;
-                c.ctx.globalCompositeOperation = 'source-over';
-                
-                // 鎖定縮放比例再貼上圖層，確保畫質與位置精準
-                c.ctx.save();
-                c.ctx.setTransform(1, 0, 0, 1, 0, 0);
-                c.ctx.drawImage(img, 0, 0);
-                c.ctx.restore();
-                
+                const prevMode = c.ctx.globalCompositeOperation; c.ctx.globalCompositeOperation = 'source-over';
+                c.ctx.save(); c.ctx.setTransform(1, 0, 0, 1, 0, 0); c.ctx.drawImage(img, 0, 0); c.ctx.restore();
                 c.ctx.globalCompositeOperation = prevMode;
             };
             img.src = c.history.pop();
@@ -611,9 +641,7 @@
     }
 
     function clearCanvas(i) {
-        const c = canvases[i]; 
-        c.history.push(c.canvas.toDataURL()); // 清空前也防呆存一下
-        if (c.history.length > 10) c.history.shift();
+        const c = canvases[i]; c.history.push(c.canvas.toDataURL()); if (c.history.length > 10) c.history.shift();
         c.ctx.clearRect(0, 0, c.canvas.width, c.canvas.height);
     }
 
@@ -621,6 +649,11 @@
         const key = document.getElementById('apiKey').value;
         const status = document.getElementById('gradingStatus');
         const gradeBtn = document.getElementById('gradeBtn');
+        
+        // 停止計時器並獲取最終時間
+        if(timerInterval) clearInterval(timerInterval);
+        const finalTimeSpent = document.getElementById('timeElapsed').innerText;
+        
         gradeBtn.disabled = true;
         status.style.display = 'block';
         status.innerText = `🚀 AI 老師正在光速批改全卷中... Please wait...`;
@@ -684,15 +717,22 @@
 
         status.innerText = `🎉 批改完成！總得分： ${score} / ${currentQuizData.length}`;
         gradeBtn.style.display = 'none';
-        saveAttemptRecordWithDetails(currentQuizId, score, currentQuizData.length, attemptDetails);
+        
+        // 傳入耗時參數
+        saveAttemptRecordWithDetails(currentQuizId, score, currentQuizData.length, attemptDetails, finalTimeSpent);
     }
 
-    function saveAttemptRecordWithDetails(quizId, score, total, details) {
+    function saveAttemptRecordWithDetails(quizId, score, total, details, timeSpent) {
         let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
         let targetQuiz = library.find(q => q.id === quizId);
         if (targetQuiz) {
             const opts = { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
-            targetQuiz.attempts.unshift({ date: new Date().toLocaleString(undefined, opts), score: `${score} / ${total}`, details: details });
+            targetQuiz.attempts.unshift({ 
+                date: new Date().toLocaleString(undefined, opts), 
+                score: `${score} / ${total}`, 
+                timeSpent: timeSpent, // 記錄花費時間
+                details: details 
+            });
             localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
         }
     }
@@ -704,7 +744,11 @@
 
         const attemptData = targetQuiz.attempts[attemptIndex];
         const container = document.getElementById('reviewContainer');
-        container.innerHTML = '';
+        
+        // 顯示該次作答的耗時
+        let timeHtml = attemptData.timeSpent ? `<div style="text-align:center; font-size:18px; color:#0369a1; font-weight:bold; margin-bottom:20px; background:#e0f2fe; padding:10px; border-radius:10px;">⏱️ 本次測驗耗時：${attemptData.timeSpent}</div>` : '';
+        
+        container.innerHTML = timeHtml;
 
         attemptData.details.forEach((item, i) => {
             const card = document.createElement('div');
@@ -820,6 +864,7 @@
                                 <small style="color:#94a3b8; margin-left:8px;">(${attempt.date})</small>
                             </div>
                             <div style="display:flex; align-items:center;">
+                                ${attempt.timeSpent ? `<span class="attempt-time">🕒 ${attempt.timeSpent}</span>` : ''}
                                 <span class="attempt-score">${attempt.score}</span>
                                 ${attempt.details ? `<button class="view-detail-btn" onclick="showAttemptDetails('${quiz.id}', ${idx})">👁️ 詳情</button>` : ''}
                             </div>
