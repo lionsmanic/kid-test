@@ -19,6 +19,7 @@
         input[type="password"], input[type="text"], input[type="number"], textarea, select, input[type="file"] { width: 100%; padding: 14px; margin: 8px 0 16px 0; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; font-family: inherit; transition: border-color 0.3s; }
         input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); }
         textarea { height: 120px; resize: vertical; }
+        .transcript-box { height: 180px; background-color: #fefce8; border-color: #fde047; }
         
         button { background: linear-gradient(135deg, #6C63FF 0%, #483D8B 100%); color: white; padding: 16px; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; font-weight: 800; width: 100%; margin-top: 10px; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3); }
         button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4); }
@@ -37,7 +38,7 @@
         .retake-btn { background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); }
         .translate-btn { background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); }
         .share-small-btn { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
-        .view-ans-btn { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); } /* 新增：查看解答按鈕 */
+        .view-ans-btn { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
         .del-btn { background: #fee2e2; color: #ef4444; }
         
         .view-detail-btn { background: #e2e8f0; color: #475569; padding: 6px 12px; font-size: 14px; border-radius: 8px; margin-left: 10px; width: auto; display: inline-block; box-shadow: none;}
@@ -48,9 +49,8 @@
         .question-card { background: #ffffff; padding: 25px; margin: 20px 0; border-radius: 20px; border: none; box-shadow: 0 6px 15px rgba(0,0,0,0.06); border-top: 6px solid var(--secondary); }
         .question-text { font-size: 24px; font-weight: 800; margin-bottom: 20px; color: #2D3748; line-height: 1.5; }
         
-        /* 🚀 新增：圖形題的 SVG 容器樣式 */
-        .question-svg-container { text-align: center; margin: 15px 0; padding: 15px; background: #f8fafc; border-radius: 12px; border: 2px dashed #cbd5e1; }
-        .question-svg-container svg { max-width: 100%; height: auto; max-height: 250px; }
+        .question-svg-container { text-align: center; margin: 15px 0; padding: 15px; background: #f8fafc; border-radius: 12px; border: 2px dashed #cbd5e1; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .question-svg-container svg { width: 100%; max-width: 350px; height: auto !important; display: block; }
 
         .input-group { background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
         .input-group h4 { margin: 0 0 12px 0; color: #4a5568; font-size: 18px; }
@@ -74,10 +74,13 @@
         .undo-btn { background: #f3e8ff; color: #7e22ce; }
         .clear-btn { background: #fee2e2; color: #ef4444; }
         
-        .feedback { padding: 20px; margin-top: 20px; border-radius: 16px; display: none; font-weight: bold; text-align: center; font-size: 18px; line-height: 1.6; animation: popIn 0.4s ease-out;}
+        .feedback { padding: 20px; margin-top: 20px; border-radius: 16px; display: none; text-align: left; font-size: 18px; line-height: 1.6; animation: popIn 0.4s ease-out;}
         @keyframes popIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         .correct { background: #f0fdf4; color: #166534; border: 2px solid #22c55e; }
         .wrong { background: #fef2f2; color: #991b1b; border: 2px solid #ef4444; }
+        
+        /* 老師解析區塊樣式 */
+        .explanation-box { margin-top: 15px; padding: 15px; background: #ffffff; border-radius: 10px; border-left: 5px solid #F59E0B; font-size: 16px; color: #475569; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
         
         #loading, #gradingStatus { text-align: center; font-size: 20px; color: var(--primary); display: none; font-weight: 800; margin: 20px 0;}
         .history-card { background: #fff; padding: 20px; border-radius: 16px; margin-bottom: 20px; border-top: 6px solid #10B981; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -97,7 +100,6 @@
         .file-item { display: inline-block; background: #e2e8f0; padding: 4px 10px; border-radius: 20px; margin: 4px 4px 0 0; }
         
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
-        /* 放寬解答預覽的 Modal 寬度，讓它可以捲動 */
         .modal-content { background: #fff; padding: 30px; border-radius: 24px; text-align: center; max-width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.2); width: 400px;}
         .modal-close { background: #e2e8f0; color: #475569; padding: 10px; margin-top: 20px; border-radius: 12px; font-size: 16px; width: 100%;}
         
@@ -129,7 +131,7 @@
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (幾何圖形版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (完整詳解版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <div style="display:flex; gap:10px; margin-top: 10px;">
@@ -151,17 +153,20 @@
             <option value="English">English</option>
         </select>
 
-        <label class="setting-label">📎 上傳參考照片/講義 (自動壓縮防當機):</label>
+        <label class="setting-label">📚 貼上長篇文章或影片字幕 (Text / Transcript):</label>
+        <textarea id="longTextData" class="transcript-box" placeholder="請在此貼上「影片字幕」或「網路文章內容」，讓 AI 幫您出題！"></textarea>
+
+        <label class="setting-label">📎 上傳參考照片/PDF (自動壓縮防當機):</label>
         <div class="file-upload-wrapper">
             <input type="file" id="fileInput" accept="image/jpeg, image/png, image/webp, application/pdf" multiple onchange="updateFileList()">
             <div id="fileList"></div>
         </div>
 
         <label class="setting-label">🎯 出題綜合指令 (Topic & Instructions):</label>
-        <textarea id="promptText" placeholder="例如：請出 3 題計算三角形角度的題目。或是直接把文章貼在這邊讓它出題..."></textarea>
+        <textarea id="promptText" placeholder="例如：請出 3 題計算三角形角度的題目，並附上圖形。或是直接把文章貼在這邊讓它出題..."></textarea>
         
         <button onclick="generateQuiz()" id="genBtn">🚀 1. 綜合產生考卷 Generate Questions</button>
-        <p id="loading">✨ AI 正在消化資料中... (遇到幾何題可能會稍微久一點點) AI is processing...</p>
+        <p id="loading">✨ AI 正在撰寫題目與詳細解答中... AI is processing...</p>
 
         <div id="previewZone" style="display:none; margin-top:25px; background:#fff; padding:20px; border-radius:16px; border: 2px solid #e2e8f0;">
             <h3 style="margin-top:0; color: #4a5568;">📋 考卷預覽 Quiz Preview <span style="display:inline-block; background:#dcfce7; color:#166534; padding:3px 10px; border-radius:15px; font-size:12px; margin-left:10px;">💾 已存入題庫</span></h3>
@@ -361,9 +366,10 @@
         const prompt = document.getElementById('promptText').value.trim();
         const lang = document.getElementById('langSelect').value;
         const fileInput = document.getElementById('fileInput');
+        const transcriptText = document.getElementById('longTextData').value.trim();
         
-        if (!apiKey || (!prompt && fileInput.files.length === 0)) { 
-            alert("請輸入 API Key，並且至少提供指令或上傳檔案喔！"); return; 
+        if (!apiKey || (!prompt && fileInput.files.length === 0 && !transcriptText)) { 
+            alert("請輸入 API Key，並且至少提供指令、上傳檔案或貼上文本喔！"); return; 
         }
         
         localStorage.setItem('geminiApiKey', apiKey); localStorage.setItem('quizLanguage', lang);
@@ -371,11 +377,15 @@
         document.getElementById('previewZone').style.display = 'none';
 
         let finalInstruction = prompt;
+        if (transcriptText) { finalInstruction += `\n\n[Reference Content]:\n"""\n${transcriptText}\n"""`; }
 
-        // 🚀 修改系統指令：允許 AI 產生 SVG 圖形
+        // 🚀 升級指令：加入 "explanation" 欄位，強制要求給出詳細的解題步驟
         const sysPrompt = `You are an expert educational assistant. Create a quiz based strictly on the provided references and user instructions. 
-        MUST output strictly as a JSON array of objects with keys: "question", "answer", and optionally "svg". 
-        If a geometric shape, fraction model, chart, or any diagram is necessary for the question, provide valid inline HTML SVG code as a string in the "svg" key. Ensure the SVG has a proper viewBox and uses clear contrasting colors.
+        MUST output strictly as a JSON array of objects with keys: "question", "answer", "explanation", and optionally "svg". 
+        - "answer": The final correct answer (keep it concise).
+        - "explanation": Detailed step-by-step calculation or reasoning to reach the answer.
+        If a geometric shape, chart, or diagram is necessary, provide valid inline HTML SVG code as a string in the "svg" key. 
+        CRITICAL SVG RULES: The SVG MUST contain a proper 'viewBox' attribute (e.g., viewBox="0 0 300 300"). DO NOT include hardcoded 'width' or 'height' attributes in the <svg> tag. Use clear contrasting colors.
         Output language MUST be exactly: ${lang}. Return ONLY the pure JSON array. Do not include introductory text.`;
         
         let apiParts = [{ text: sysPrompt + "\n\nUser Instructions:\n" + finalInstruction }];
@@ -388,7 +398,7 @@
                     apiParts.push({ inline_data: { mime_type: fileData.mime_type, data: fileData.data } });
                 }
             } else {
-                document.getElementById('loading').innerText = "✨ AI 正在施展魔法中... AI is generating...";
+                document.getElementById('loading').innerText = "✨ AI 正在施展魔法撰寫題目與詳解... AI is generating...";
             }
 
             const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
@@ -411,12 +421,11 @@
             const langPrefix = lang.includes('中文') ? '[TW]' : '[EN]';
             saveQuizToLibrary(currentQuizId, `${langPrefix} ${generatedTitle}`, currentQuizData);
 
-            // 🚀 在預覽區也支援渲染 SVG
             document.getElementById('previewList').innerHTML = currentQuizData.map((q, i) => `
                 <div style="margin-bottom:15px; padding-bottom:10px; border-bottom:1px dashed #e2e8f0;">
                     <b>Q${i+1}:</b> ${q.question}<br>
                     ${q.svg ? `<div class="question-svg-container">${q.svg}</div>` : ''}
-                    <small style="color:#10b981; font-weight:bold;">(Ans: ${q.answer})</small>
+                    <div style="color:#10b981; font-weight:bold; margin-top: 5px;">(Ans: ${q.answer})</div>
                 </div>
             `).join('');
             
@@ -548,7 +557,6 @@
             const card = document.createElement('div');
             card.className = 'question-card';
             
-            // 🚀 若有圖形 SVG，就渲染出來
             const svgHtml = q.svg ? `<div class="question-svg-container">${q.svg}</div>` : '';
 
             card.innerHTML = `
@@ -668,6 +676,7 @@
 
         const gradePromises = currentQuizData.map(async (qData, i) => {
             const ans = qData.answer;
+            const explanationText = qData.explanation || ""; // 🚀 讀取 AI 產生的解析
             const textInputVal = document.getElementById(`textInput_${i}`).value.trim();
             let requestBody = { contents: [{ parts: [] }] };
             let promptBase = "";
@@ -681,7 +690,7 @@
                 const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height).data;
                 let isBlank = true;
                 for (let j = 3; j < imgData.length; j += 4) { if (imgData[j] > 0) { isBlank = false; break; } }
-                if (isBlank) return { index: i, question: qData.question, svg: qData.svg, ans: ans, studentText: "", studentImg: null, correct: false, msg: "", isBlank: true, isError: false };
+                if (isBlank) return { index: i, question: qData.question, svg: qData.svg, ans: ans, explanation: explanationText, studentText: "", studentImg: null, correct: false, msg: "", isBlank: true, isError: false };
 
                 const tempCanvas = document.createElement('canvas'); tempCanvas.width = canvasEl.width; tempCanvas.height = canvasEl.height;
                 const tempCtx = tempCanvas.getContext('2d'); tempCtx.fillStyle = '#ffffff'; tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height); tempCtx.drawImage(canvasEl, 0, 0);
@@ -700,8 +709,8 @@
                 });
                 const d = await resp.json();
                 const res = JSON.parse(d.candidates[0].content.parts[0].text.replace(/```json|```/g, ''));
-                return { index: i, question: qData.question, svg: qData.svg, ans: ans, studentText: textInputVal, studentImg: savedImageBase64, correct: res.correct, msg: res.msg, isBlank: false, isError: false };
-            } catch(e) { return { index: i, question: qData.question, svg: qData.svg, ans: ans, studentText: textInputVal, studentImg: savedImageBase64, correct: false, msg: "", isBlank: false, isError: true }; }
+                return { index: i, question: qData.question, svg: qData.svg, ans: ans, explanation: explanationText, studentText: textInputVal, studentImg: savedImageBase64, correct: res.correct, msg: res.msg, isBlank: false, isError: false };
+            } catch(e) { return { index: i, question: qData.question, svg: qData.svg, ans: ans, explanation: explanationText, studentText: textInputVal, studentImg: savedImageBase64, correct: false, msg: "", isBlank: false, isError: true }; }
         });
 
         const results = await Promise.all(gradePromises);
@@ -709,16 +718,46 @@
 
         results.forEach(res => {
             const f = document.getElementById(`f_${res.index}`);
+            
+            // 🚀 組裝包含解析的 HTML 區塊
+            let feedbackText = "";
+            let feedbackClass = "";
+
+            if (res.isBlank) { 
+                feedbackText = `❌ 哎呀，這題忘了寫喔！ You left this blank!<br><b style="color:#b91c1c;">標準答案 Ans: ${res.ans}</b>`; 
+                feedbackClass = 'wrong'; 
+            } 
+            else if (res.isError) { 
+                feedbackText = `⚠️ 閱卷連線不穩定，請家長幫忙看一下！<br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; 
+                feedbackClass = 'wrong'; 
+            } 
+            else if (res.correct) { 
+                feedbackText = `⭕ 答對了！ Correct!<br><span style="font-size:16px; color:#15803d;">老師說: ${res.msg}</span>`; 
+                feedbackClass = 'correct'; 
+                score++; 
+            } 
+            else { 
+                feedbackText = `❌ 不對喔！ Let's try again!<br><span style="font-size:16px; color:#b91c1c;">老師說: ${res.msg}</span><br><b style="color:#7f1d1d; margin-top:8px; display:block;">標準答案 Ans: ${res.ans}</b>`; 
+                feedbackClass = 'wrong'; 
+            }
+
+            // 若有 AI 解析，則附在下方
+            let explanationHtml = res.explanation ? `<div class="explanation-box"><b>💡 老師解析：</b><br>${res.explanation.replace(/\n/g, '<br>')}</div>` : '';
+            
+            f.className = `feedback ${feedbackClass}`;
+            f.innerHTML = `<div>${feedbackText}</div> ${explanationHtml}`;
             f.style.display = 'block';
-            let finalMsgHtml = "";
 
-            if (res.isBlank) { finalMsgHtml = `❌ 哎呀，這題忘了寫喔！ You left this blank!<br><b style="color:#b91c1c;">標準答案 Ans: ${res.ans}</b>`; f.className='feedback wrong'; } 
-            else if (res.isError) { finalMsgHtml = `⚠️ 閱卷連線不穩定，請家長幫忙看一下！<br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; f.className='feedback wrong'; } 
-            else if (res.correct) { finalMsgHtml = `⭕ 答對了！ Correct!<br><span style="font-size:16px; color:#15803d;">老師說: ${res.msg}</span>`; f.className='feedback correct'; score++; } 
-            else { finalMsgHtml = `❌ 不對喔！ Let's try again!<br><span style="font-size:16px; color:#b91c1c;">老師說: ${res.msg}</span><br><b style="color:#7f1d1d; margin-top:8px; display:block;">標準答案 Ans: ${res.ans}</b>`; f.className='feedback wrong'; }
-            f.innerHTML = finalMsgHtml;
-
-            attemptDetails.push({ question: res.question, svg: res.svg, correctAnswer: res.ans, studentText: res.studentText, studentImage: res.studentImg, isCorrect: res.correct && !res.isBlank && !res.isError, feedbackHtml: finalMsgHtml });
+            attemptDetails.push({ 
+                question: res.question, 
+                svg: res.svg, 
+                correctAnswer: res.ans, 
+                explanation: res.explanation,
+                studentText: res.studentText, 
+                studentImage: res.studentImg, 
+                isCorrect: res.correct && !res.isBlank && !res.isError, 
+                feedbackHtml: f.innerHTML 
+            });
         });
 
         status.innerText = `🎉 批改完成！總得分： ${score} / ${currentQuizData.length}`;
@@ -765,11 +804,12 @@
             const feedbackClass = item.isCorrect ? 'correct' : 'wrong';
             const svgHtml = item.svg ? `<div class="question-svg-container">${item.svg}</div>` : '';
 
+            // 直接顯示當初組合好的 feedbackHtml (已包含老師解析)
             card.innerHTML = `
                 <div class="question-text"><span style="color:#94a3b8; font-size:18px;">Q${i+1}.</span><br>${item.question}</div>
                 ${svgHtml}
                 <div style="margin-bottom: 15px;"><h4 style="color: #64748b; margin-bottom: 8px; font-size: 16px;">當時的作答內容：</h4>${studentAnsHtml}</div>
-                <div class="feedback ${feedbackClass}" style="display:block;">${item.feedbackHtml}</div>
+                <div class="feedback ${feedbackClass}" style="display:block; text-align:left;">${item.feedbackHtml}</div>
             `;
             container.appendChild(card);
         });
@@ -779,22 +819,25 @@
         window.scrollTo(0, 0);
     }
 
-    // 🚀 新增：家長從歷史區預覽解答
+    // 🚀 在「查看解答」Modal 中，顯示詳細解析
     function showQuizAnswers(quizId) {
         let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
         let targetQuiz = library.find(q => q.id === quizId);
         if (!targetQuiz) return;
 
         let html = `<h3 style="margin-top:0; color:#059669;">📋 考卷解答本</h3>
-                    <p style="color:#64748b; margin-top:-10px;">${targetQuiz.title}</p>
-                    <div style="text-align:left; max-height: 50vh; overflow-y:auto; padding-right:10px;">`;
+                    <p style="color:#64748b; margin-top:-10px; font-weight:bold;">${targetQuiz.title}</p>
+                    <div style="text-align:left; max-height: 60vh; overflow-y:auto; padding-right:10px;">`;
         
         targetQuiz.quizData.forEach((q, i) => {
+            let explanationHtml = q.explanation ? `<div style="color:#475569; font-size:15px; margin-top:8px; padding-top:8px; border-top:1px dashed #cbd5e1;"><b>💡 解析：</b><br>${q.explanation.replace(/\n/g, '<br>')}</div>` : '';
+            
             html += `
                 <div style="margin-bottom:15px; padding:15px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0;">
-                    <div style="font-weight:bold; color:#1e293b; margin-bottom:10px;">Q${i+1}: ${q.question}</div>
+                    <div style="font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:18px;">Q${i+1}: ${q.question}</div>
                     ${q.svg ? `<div class="question-svg-container" style="background:#fff; margin-bottom:10px;">${q.svg}</div>` : ''}
-                    <div style="color:#059669; font-weight:800;">解答 Ans: ${q.answer}</div>
+                    <div style="color:#059669; font-weight:800; font-size: 18px;">Ans: ${q.answer}</div>
+                    ${explanationHtml}
                 </div>
             `;
         });
@@ -849,7 +892,8 @@
         document.getElementById('translateStatusText').innerText = hasChinese ? "Converting quiz to English..." : "正在將考卷翻譯為繁體中文...";
         document.getElementById('translateModal').style.display = 'flex';
 
-        const sysPrompt = `Translate the following quiz into ${targetLanguage}. Maintain the exact JSON array structure with "question", "answer", and "svg" keys. Do NOT wrap in markdown \`\`\`json. Return ONLY pure JSON.`;
+        // 🚀 翻譯時也要確保 explanation 被一起翻譯
+        const sysPrompt = `Translate the following quiz into ${targetLanguage}. Maintain the exact JSON array structure with "question", "answer", "explanation", and "svg" keys. Do NOT wrap in markdown \`\`\`json. Return ONLY pure JSON.`;
         
         try {
             const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
