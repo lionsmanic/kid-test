@@ -18,8 +18,7 @@
         
         input[type="password"], input[type="text"], input[type="number"], textarea, select, input[type="file"] { width: 100%; padding: 14px; margin: 8px 0 16px 0; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; font-family: inherit; transition: border-color 0.3s; }
         input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); }
-        textarea { height: 120px; resize: vertical; }
-        .transcript-box { height: 180px; background-color: #fefce8; border-color: #fde047; }
+        textarea { height: 150px; resize: vertical; }
         
         button { background: linear-gradient(135deg, #6C63FF 0%, #483D8B 100%); color: white; padding: 16px; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; font-weight: 800; width: 100%; margin-top: 10px; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3); }
         button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4); }
@@ -79,7 +78,6 @@
         .correct { background: #f0fdf4; color: #166534; border: 2px solid #22c55e; }
         .wrong { background: #fef2f2; color: #991b1b; border: 2px solid #ef4444; }
         
-        /* 老師解析區塊樣式 */
         .explanation-box { margin-top: 15px; padding: 15px; background: #ffffff; border-radius: 10px; border-left: 5px solid #F59E0B; font-size: 16px; color: #475569; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
         
         #loading, #gradingStatus { text-align: center; font-size: 20px; color: var(--primary); display: none; font-weight: 800; margin: 20px 0;}
@@ -131,7 +129,7 @@
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (完整詳解版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (極簡出題版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <div style="display:flex; gap:10px; margin-top: 10px;">
@@ -153,9 +151,6 @@
             <option value="English">English</option>
         </select>
 
-        <label class="setting-label">📚 貼上長篇文章或影片字幕 (Text / Transcript):</label>
-        <textarea id="longTextData" class="transcript-box" placeholder="請在此貼上「影片字幕」或「網路文章內容」，讓 AI 幫您出題！"></textarea>
-
         <label class="setting-label">📎 上傳參考照片/PDF (自動壓縮防當機):</label>
         <div class="file-upload-wrapper">
             <input type="file" id="fileInput" accept="image/jpeg, image/png, image/webp, application/pdf" multiple onchange="updateFileList()">
@@ -163,7 +158,7 @@
         </div>
 
         <label class="setting-label">🎯 出題綜合指令 (Topic & Instructions):</label>
-        <textarea id="promptText" placeholder="例如：請出 3 題計算三角形角度的題目，並附上圖形。或是直接把文章貼在這邊讓它出題..."></textarea>
+        <textarea id="promptText" placeholder="例如：請出 3 題計算三角形角度的題目。或是直接把長篇文章貼在這邊讓 AI 出題..."></textarea>
         
         <button onclick="generateQuiz()" id="genBtn">🚀 1. 綜合產生考卷 Generate Questions</button>
         <p id="loading">✨ AI 正在撰寫題目與詳細解答中... AI is processing...</p>
@@ -366,10 +361,9 @@
         const prompt = document.getElementById('promptText').value.trim();
         const lang = document.getElementById('langSelect').value;
         const fileInput = document.getElementById('fileInput');
-        const transcriptText = document.getElementById('longTextData').value.trim();
         
-        if (!apiKey || (!prompt && fileInput.files.length === 0 && !transcriptText)) { 
-            alert("請輸入 API Key，並且至少提供指令、上傳檔案或貼上文本喔！"); return; 
+        if (!apiKey || (!prompt && fileInput.files.length === 0)) { 
+            alert("請輸入 API Key，並且至少提供指令或上傳檔案喔！"); return; 
         }
         
         localStorage.setItem('geminiApiKey', apiKey); localStorage.setItem('quizLanguage', lang);
@@ -377,13 +371,11 @@
         document.getElementById('previewZone').style.display = 'none';
 
         let finalInstruction = prompt;
-        if (transcriptText) { finalInstruction += `\n\n[Reference Content]:\n"""\n${transcriptText}\n"""`; }
 
-        // 🚀 升級指令：加入 "explanation" 欄位，強制要求給出詳細的解題步驟
         const sysPrompt = `You are an expert educational assistant. Create a quiz based strictly on the provided references and user instructions. 
         MUST output strictly as a JSON array of objects with keys: "question", "answer", "explanation", and optionally "svg". 
-        - "answer": The final correct answer (keep it concise).
-        - "explanation": Detailed step-by-step calculation or reasoning to reach the answer.
+        - "answer": The final correct answer.
+        - "explanation": Detailed step-by-step calculation or reasoning.
         If a geometric shape, chart, or diagram is necessary, provide valid inline HTML SVG code as a string in the "svg" key. 
         CRITICAL SVG RULES: The SVG MUST contain a proper 'viewBox' attribute (e.g., viewBox="0 0 300 300"). DO NOT include hardcoded 'width' or 'height' attributes in the <svg> tag. Use clear contrasting colors.
         Output language MUST be exactly: ${lang}. Return ONLY the pure JSON array. Do not include introductory text.`;
@@ -676,7 +668,7 @@
 
         const gradePromises = currentQuizData.map(async (qData, i) => {
             const ans = qData.answer;
-            const explanationText = qData.explanation || ""; // 🚀 讀取 AI 產生的解析
+            const explanationText = qData.explanation || ""; 
             const textInputVal = document.getElementById(`textInput_${i}`).value.trim();
             let requestBody = { contents: [{ parts: [] }] };
             let promptBase = "";
@@ -719,7 +711,6 @@
         results.forEach(res => {
             const f = document.getElementById(`f_${res.index}`);
             
-            // 🚀 組裝包含解析的 HTML 區塊
             let feedbackText = "";
             let feedbackClass = "";
 
@@ -741,7 +732,6 @@
                 feedbackClass = 'wrong'; 
             }
 
-            // 若有 AI 解析，則附在下方
             let explanationHtml = res.explanation ? `<div class="explanation-box"><b>💡 老師解析：</b><br>${res.explanation.replace(/\n/g, '<br>')}</div>` : '';
             
             f.className = `feedback ${feedbackClass}`;
@@ -804,7 +794,6 @@
             const feedbackClass = item.isCorrect ? 'correct' : 'wrong';
             const svgHtml = item.svg ? `<div class="question-svg-container">${item.svg}</div>` : '';
 
-            // 直接顯示當初組合好的 feedbackHtml (已包含老師解析)
             card.innerHTML = `
                 <div class="question-text"><span style="color:#94a3b8; font-size:18px;">Q${i+1}.</span><br>${item.question}</div>
                 ${svgHtml}
@@ -819,7 +808,6 @@
         window.scrollTo(0, 0);
     }
 
-    // 🚀 在「查看解答」Modal 中，顯示詳細解析
     function showQuizAnswers(quizId) {
         let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
         let targetQuiz = library.find(q => q.id === quizId);
@@ -892,7 +880,6 @@
         document.getElementById('translateStatusText').innerText = hasChinese ? "Converting quiz to English..." : "正在將考卷翻譯為繁體中文...";
         document.getElementById('translateModal').style.display = 'flex';
 
-        // 🚀 翻譯時也要確保 explanation 被一起翻譯
         const sysPrompt = `Translate the following quiz into ${targetLanguage}. Maintain the exact JSON array structure with "question", "answer", "explanation", and "svg" keys. Do NOT wrap in markdown \`\`\`json. Return ONLY pure JSON.`;
         
         try {
