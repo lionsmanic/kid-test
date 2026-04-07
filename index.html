@@ -108,7 +108,6 @@
         
         .share-option-btn { background: #f8fafc; color: #1e293b; border: 2px solid #e2e8f0; padding: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; box-shadow: none; cursor: pointer; border-radius: 12px; transition: 0.2s;}
         .share-option-btn:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-2px); }
-        .share-option-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
         .timer-panel { background: #fff7ed; border: 3px solid #fbbf24; padding: 15px 20px; border-radius: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.1); }
         .timer-display { font-size: 28px; font-weight: 900; color: #d97706; font-family: monospace; display: flex; align-items: center; gap: 10px;}
@@ -147,7 +146,7 @@
     </div>
 
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (自動縮網址版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (短網址解鎖版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <hr style="border: 1px dashed #cbd5e1; margin: 30px 0;">
@@ -224,11 +223,11 @@
         <h3 style="margin-top:0; color: #059669;">📤 傳送考卷給小朋友</h3>
         <p style="color:#64748b; font-size: 14px; margin-bottom: 20px; line-height: 1.5;">請選擇最方便的傳送方式：</p>
         
-        <button id="shortenBtn" class="share-option-btn" style="color: #059669; border-color: #bbf7d0; background: #f0fdf4; width:100%; text-align:left;" onclick="triggerShortLink()">
+        <button id="shortenBtn" class="share-option-btn" style="color: #059669; border-color: #bbf7d0; background: #f0fdf4; width:100%; text-align:left; flex-direction: row;" onclick="triggerShortLink()">
             <span style="font-size: 24px;">🔗</span> 
             <div style="text-align: left;">
-                <div style="font-weight: 800;">產生短網址並複製 (最推薦)</div>
-                <div style="font-size: 12px; font-weight: normal;">將冗長網址縮短，用 Line 傳送最乾淨</div>
+                <div style="font-weight: 800;">產生短網址 (最推薦)</div>
+                <div style="font-size: 12px; font-weight: normal;">自動將網址縮短，方便 Line 完美傳送</div>
             </div>
         </button>
 
@@ -244,7 +243,7 @@
             <span style="font-size: 24px;">✈️</span> 
             <div style="text-align: left;">
                 <div style="font-weight: 800;">傳送/下載實體考卷檔 (.json)</div>
-                <div style="font-size: 12px; font-weight: normal;">直接 AirDrop 給 iPad，再大都不怕斷線</div>
+                <div style="font-size: 12px; font-weight: normal;">直接 AirDrop 到 iPad，100% 穩定不斷線</div>
             </div>
         </button>
 
@@ -344,7 +343,12 @@
         if (id === 'shareModal') {
             document.getElementById('qrDisplayArea').style.display = 'none';
             // 還原按鈕狀態
-            document.getElementById('shortenBtn').innerHTML = `<span style="font-size: 24px;">🔗</span> <div style="text-align: left;"><div style="font-weight: 800;">產生短網址並複製 (最推薦)</div><div style="font-size: 12px; font-weight: normal;">自動縮短網址，Line 傳送最乾淨</div></div>`;
+            const shortenBtn = document.getElementById('shortenBtn');
+            shortenBtn.dataset.state = '';
+            shortenBtn.style.flexDirection = 'row';
+            shortenBtn.style.cursor = 'pointer';
+            shortenBtn.innerHTML = `<span style="font-size: 24px;">🔗</span> <div style="text-align: left;"><div style="font-weight: 800;">產生短網址 (最推薦)</div><div style="font-size: 12px; font-weight: normal;">自動將網址縮短，方便 Line 完美傳送</div></div>`;
+            
             document.getElementById('qrShareBtn').innerHTML = `<span style="font-size: 24px;">📱</span> <div style="text-align: left;"><div style="font-weight: 800;">顯示極簡 QR Code</div><div style="font-size: 12px; font-weight: normal;">結合短網址技術，用 iPad 一秒掃描成功</div></div>`;
         }
     }
@@ -480,7 +484,6 @@
 
         currentSharePayload = { title: titleToShare, data: dataToShare };
         
-        // 準備長網址 (壓縮後的參數)
         const jsonStr = JSON.stringify(currentSharePayload);
         const compressedData = LZString.compressToEncodedURIComponent(jsonStr);
         currentShareUrl = window.location.origin + window.location.pathname + "?c=" + compressedData;
@@ -491,16 +494,14 @@
     // 🚀 核心黑科技：呼叫 is.gd API 產生極度短網址
     function generateShortUrl(longUrl) {
         return new Promise((resolve, reject) => {
-            // is.gd 的伺服器極限大約是 5000 字元
             if (longUrl.length > 5000) {
-                reject(new Error("考卷包含了大量複雜的圖形資料，長度已突破縮網址伺服器的極限！"));
+                reject(new Error("考卷包含了大量圖形資料，長度突破了伺服器極限！"));
                 return;
             }
 
             const callbackName = 'isgd_' + Math.round(Math.random() * 100000);
             const script = document.createElement('script');
 
-            // 設定超時防護機制 (8秒)
             const timeoutId = setTimeout(() => {
                 delete window[callbackName];
                 document.body.removeChild(script);
@@ -529,22 +530,54 @@
         });
     }
 
+    // 🚀 終極備用複製法：繞過 iOS 限制
+    window.fallbackCopyTextToClipboard = function(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            alert("✅ 短網址已複製成功！\n\n您可以直接貼上到 Line 裡面囉！");
+        } catch (err) {
+            alert("❌ 自動複製失敗，請手動長按框框內的網址複製。");
+        }
+        document.body.removeChild(textArea);
+    };
+
+    // 🚀 蘋果防護解鎖版：兩段式流程
     async function triggerShortLink() {
         const btn = document.getElementById('shortenBtn');
+        if (btn.dataset.state === 'done') return; 
+
         const originalHtml = btn.innerHTML;
         btn.innerHTML = `<span style="font-size: 24px;">⏳</span> <div style="text-align: left;"><div style="font-weight: 800;">正在向伺服器申請短網址...</div></div>`;
-        btn.disabled = true;
+        btn.style.cursor = 'wait';
 
         try {
             const shortUrl = await generateShortUrl(currentShareUrl);
-            await navigator.clipboard.writeText(shortUrl);
-            alert(`✅ 短網址已成功產生並複製！\n\n您的極簡短網址為：\n${shortUrl}\n\n可以直接貼到 Line 給小朋友囉！`);
-            closeModal('shareModal');
+            
+            // 狀態改為完成，變成顯示介面 + 直接點擊的複製按鈕
+            btn.dataset.state = 'done';
+            btn.style.cursor = 'default';
+            btn.style.flexDirection = 'column';
+            btn.style.background = '#f0fdf4';
+            btn.style.borderColor = '#bbf7d0';
+            
+            btn.innerHTML = `
+                <div style="font-weight: 800; color: #059669; width:100%; text-align:left; margin-bottom: 8px;">✅ 短網址產生成功！</div>
+                <div style="display:flex; gap:8px; width:100%;">
+                    <input type="text" value="${shortUrl}" readonly style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; margin:0; background:#fff; color:#333;" onclick="this.select(); event.stopPropagation();">
+                    <button onclick="fallbackCopyTextToClipboard('${shortUrl}'); event.stopPropagation();" style="margin:0; padding:8px 15px; background:#10B981; font-size:14px; width:auto; border-radius:8px; color:#fff; font-weight:bold; border:none; cursor:pointer;">複製</button>
+                </div>
+            `;
         } catch (error) {
-            alert(`❌ 縮網址失敗：${error.message}\n\n👉 建議解決方案：\n請改用面板最下方的「✈️ 傳送/下載考卷檔」，透過 AirDrop 傳送是最穩定的作法喔！`);
-        } finally {
+            alert(`❌ 縮網址失敗：${error.message}\n\n👉 建議解決方案：\n這份考卷太豐富了，請改用最下方的「✈️ 傳送/下載考卷檔」。`);
             btn.innerHTML = originalHtml;
-            btn.disabled = false;
+            btn.style.cursor = 'pointer';
         }
     }
 
@@ -573,13 +606,11 @@
         const fileName = `${safeTitle}.json`;
         const file = new File([blob], fileName, {type: "application/json"});
 
-        // 支援系統原生分享 (AirDrop 等)
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
             try {
                 await navigator.share({ title: currentSharePayload.title, text: '請接收這份 AI 專屬考卷檔', files: [file] });
             } catch(e) { console.log("使用者取消分享或發生錯誤"); }
         } else {
-            // 不支援原生分享則直接下載
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = fileName; a.click(); URL.revokeObjectURL(url);
             alert(`✅ 考卷檔已下載為 ${fileName}。\n請透過 Email 或其他方式傳送此檔案給小朋友。`);
@@ -691,6 +722,7 @@
         currentQuizData.forEach((q, i) => {
             const card = document.createElement('div');
             card.className = 'question-card';
+            
             const svgHtml = q.svg ? `<div class="question-svg-container">${q.svg}</div>` : '';
 
             card.innerHTML = `
