@@ -106,8 +106,9 @@
         .edit-title-icon { cursor: pointer; font-size: 18px; margin-left: 8px; opacity: 0.5; transition: 0.2s; }
         .edit-title-icon:hover { opacity: 1; transform: scale(1.1); }
         
-        .share-option-btn { background: #f8fafc; color: #1e293b; border: 2px solid #e2e8f0; padding: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; box-shadow: none;}
+        .share-option-btn { background: #f8fafc; color: #1e293b; border: 2px solid #e2e8f0; padding: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; box-shadow: none; cursor: pointer; border-radius: 12px; transition: 0.2s;}
         .share-option-btn:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-2px); }
+        .share-option-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
         .timer-panel { background: #fff7ed; border: 3px solid #fbbf24; padding: 15px 20px; border-radius: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.1); }
         .timer-display { font-size: 28px; font-weight: 900; color: #d97706; font-family: monospace; display: flex; align-items: center; gap: 10px;}
@@ -115,7 +116,6 @@
         .alarm-setup input { width: 60px; padding: 6px; margin: 0; border: 1px solid #cbd5e1; font-size: 16px; text-align: center;}
         .alarm-setup button { margin: 0; padding: 6px 12px; font-size: 14px; width: auto; background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);}
 
-        /* 🚀 新增：首頁的接收區塊樣式 */
         .receive-zone { background: #fff; padding: 25px; border-radius: 16px; border: 2px dashed #F59E0B; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.05); }
 
         @media (max-width: 768px) {
@@ -160,7 +160,7 @@
     </div>
 
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心</h2>
+        <h2>✨ AI 魔法綜合出題中心 (自動短網址版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <hr style="border: 1px dashed #cbd5e1; margin: 30px 0;">
@@ -235,17 +235,25 @@
 <div id="shareModal" class="modal-overlay">
     <div class="modal-content" style="border: 4px solid #10B981;">
         <h3 style="margin-top:0; color: #059669;">📤 傳送考卷給小朋友</h3>
-        <p style="color:#64748b; font-size: 14px; margin-bottom: 20px; line-height: 1.5;">圖形考卷資料量極大，為了防止 Line 把網址截斷，請選擇以下方式：</p>
+        <p style="color:#64748b; font-size: 14px; margin-bottom: 20px; line-height: 1.5;">請選擇最方便的傳送方式：</p>
         
-        <button class="share-option-btn" style="color: #D97706; border-color: #fde68a; background: #fffbeb;" onclick="triggerCopyPasscode()">
+        <button id="shortLinkBtn" class="share-option-btn" style="color: #059669; border-color: #bbf7d0; background: #f0fdf4; width:100%; text-align:left;" onclick="triggerShortLink()">
+            <span style="font-size: 24px;">🔗</span> 
+            <div style="text-align: left;">
+                <div style="font-weight: 800;">產生短網址並複製 (最推薦)</div>
+                <div style="font-size: 12px; font-weight: normal;">自動將網址縮短，方便 Line 完美傳送</div>
+            </div>
+        </button>
+
+        <button class="share-option-btn" style="color: #D97706; border-color: #fde68a; background: #fffbeb; width:100%; text-align:left;" onclick="triggerCopyPasscode()">
             <span style="font-size: 24px;">📋</span> 
             <div style="text-align: left;">
-                <div style="font-weight: 800;">複製「魔法密語」(最推薦)</div>
-                <div style="font-size: 12px; font-weight: normal;">貼到 Line，不怕被截斷，小孩直接複製解鎖</div>
+                <div style="font-weight: 800;">複製「魔法密語」</div>
+                <div style="font-size: 12px; font-weight: normal;">當短網址失效時的備用方案</div>
             </div>
         </button>
         
-        <button class="share-option-btn" style="color: #2563EB; border-color: #bfdbfe; background: #eff6ff;" onclick="triggerShareFile()">
+        <button class="share-option-btn" style="color: #2563EB; border-color: #bfdbfe; background: #eff6ff; width:100%; text-align:left;" onclick="triggerShareFile()">
             <span style="font-size: 24px;">✈️</span> 
             <div style="text-align: left;">
                 <div style="font-weight: 800;">傳送/下載考卷檔 (.json)</div>
@@ -275,7 +283,8 @@
 <script>
     let currentQuizData = [];
     let currentQuizId = null; 
-    let currentSharePayload = null; // 🚀 用來暫存要分享的物件
+    let currentSharePayload = null; 
+    let currentShareUrl = ""; // 用來放原始的長網址
     let canvases = [];
     
     let currentReviewQuizId = null;
@@ -292,16 +301,36 @@
         const savedLang = localStorage.getItem('quizLanguage');
         if (savedKey) document.getElementById('apiKey').value = savedKey;
         if (savedLang) document.getElementById('langSelect').value = savedLang;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const dataParam = urlParams.get('d');
+        const compressedParam = urlParams.get('c'); 
+
+        if (compressedParam) {
+            try {
+                const jsonStr = LZString.decompressFromEncodedURIComponent(compressedParam);
+                const payload = JSON.parse(jsonStr);
+                currentQuizData = payload.data;
+                currentQuizId = "quiz_" + Date.now().toString(); 
+                saveQuizToLibrary(currentQuizId, payload.title || "傳送過來的測驗", currentQuizData);
+                renderQuiz();
+            } catch (e) { alert("讀取壓縮考卷失敗 Failed to load compressed quiz data!"); }
+        } else if (dataParam) {
+            try {
+                const payload = JSON.parse(decodeURIComponent(escape(window.atob(dataParam))));
+                currentQuizData = payload.data;
+                currentQuizId = "quiz_" + Date.now().toString(); 
+                saveQuizToLibrary(currentQuizId, payload.title || "傳送過來的測驗", currentQuizData);
+                renderQuiz();
+            } catch (e) { alert("讀取舊版考卷失敗 Failed to load quiz data!"); }
+        }
     };
 
-    // 🚀 核心接收功能 1：從魔法密語載入
     function loadFromPasscode() {
         let code = document.getElementById('passcodeInput').value.trim();
         if (!code) { alert("請先貼上魔法密語喔！"); return; }
         try {
-            // 自動移除前綴，增加防呆
             if (code.startsWith("AIQZ-")) code = code.substring(5);
-            
             const jsonStr = LZString.decompressFromBase64(code);
             if (!jsonStr) throw new Error("解碼為空");
             
@@ -310,15 +339,12 @@
             currentQuizId = "quiz_" + Date.now().toString();
             saveQuizToLibrary(currentQuizId, payload.title || "從密語載入的測驗", currentQuizData);
             
-            document.getElementById('passcodeInput').value = ''; // 清空輸入框
-            document.getElementById('receiveZone').style.display = 'none'; // 隱藏接收區塊
+            document.getElementById('passcodeInput').value = ''; 
+            document.getElementById('receiveZone').style.display = 'none'; 
             renderQuiz();
-        } catch(e) {
-            alert("❌ 無效的魔法密語，或密語不完整！請確認有複製到最後一個字。");
-        }
+        } catch(e) { alert("❌ 無效的魔法密語，或密語不完整！請確認有複製到最後一個字。"); }
     }
 
-    // 🚀 核心接收功能 2：從檔案載入
     function loadFromFile(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -330,12 +356,10 @@
                 currentQuizId = "quiz_" + Date.now().toString();
                 saveQuizToLibrary(currentQuizId, payload.title || "從檔案載入的測驗", currentQuizData);
                 
-                event.target.value = ''; // 重置 file input
+                event.target.value = ''; 
                 document.getElementById('receiveZone').style.display = 'none';
                 renderQuiz();
-            } catch(err) {
-                alert("❌ 檔案讀取失敗，請確認這是否為有效的 .json 考卷檔。");
-            }
+            } catch(err) { alert("❌ 檔案讀取失敗，請確認這是否為有效的 .json 考卷檔。"); }
         };
         reader.readAsText(file);
     }
@@ -470,7 +494,7 @@
         renderQuiz(); 
     }
 
-    // 🚀 新版打包分享邏輯
+    // 準備分享面板
     function openShareModal(sourceId) {
         let titleToShare = ""; let dataToShare = [];
         if (sourceId === 'current') {
@@ -485,24 +509,74 @@
             else return;
         }
 
-        // 把資料暫存在全域變數中，供按鈕點擊使用
         currentSharePayload = { title: titleToShare, data: dataToShare };
+        
+        // 準備長網址 (供自動縮短用)
+        const jsonStr = JSON.stringify(currentSharePayload);
+        const compressedData = LZString.compressToEncodedURIComponent(jsonStr);
+        currentShareUrl = window.location.origin + window.location.pathname + "?c=" + compressedData;
+
+        // 重置按鈕狀態
+        const btn = document.getElementById('shortLinkBtn');
+        btn.disabled = false;
+        btn.innerHTML = `<span style="font-size: 24px;">🔗</span> <div style="text-align: left;"><div style="font-weight: 800;">產生短網址並複製 (最推薦)</div><div style="font-size: 12px; font-weight: normal;">自動將網址縮短，方便 Line 完美傳送</div></div>`;
+
         document.getElementById('shareModal').style.display = 'flex';
     }
 
-    // 分享方式一：複製純文字魔法密語 (最穩定)
+    // 🚀 新增：呼叫 is.gd 產生短網址
+    function triggerShortLink() {
+        const btn = document.getElementById('shortLinkBtn');
+        
+        // 物理極限防呆機制：如果長度超過伺服器負荷，直接阻擋
+        if (currentShareUrl.length > 8000) {
+            alert("❌ 這份考卷包含了大量的圖形資料，已經超過了短網址伺服器能承受的極限囉！\\n\\n👉 解決方案：請改用下方的「📋 複製魔法密語」傳送給 Line，或使用「✈️ 傳送/下載考卷檔」。");
+            return;
+        }
+
+        btn.innerText = "⏳ 正在向伺服器申請短網址...";
+        btn.disabled = true;
+
+        const script = document.createElement('script');
+        const callbackName = 'isgdCallback_' + Math.round(Math.random() * 100000);
+        
+        window[callbackName] = function(data) {
+            delete window[callbackName];
+            document.body.removeChild(script);
+            btn.disabled = false;
+            btn.innerHTML = `<span style="font-size: 24px;">🔗</span> <div style="text-align: left;"><div style="font-weight: 800;">產生短網址</div><div style="font-size: 12px; font-weight: normal;">已產生！點擊再次複製</div></div>`;
+            
+            if (data.shorturl) {
+                navigator.clipboard.writeText(data.shorturl).then(() => {
+                    alert("✅ 短網址已產生並複製成功！\n\n您可以直接貼上到 Line 裡面囉：\n" + data.shorturl);
+                    closeModal('shareModal');
+                });
+            } else {
+                alert("❌ 縮網址伺服器目前忙碌中或資料量過大！\n\n👉 建議：請改用下方的「魔法密語」或「傳送考卷檔」。");
+            }
+        };
+        
+        // 使用 JSONP 繞過 CORS 限制呼叫 is.gd
+        script.src = `https://is.gd/create.php?format=json&url=${encodeURIComponent(currentShareUrl)}&callback=${callbackName}`;
+        script.onerror = () => {
+            alert("❌ 無法連線到縮網址伺服器！");
+            btn.disabled = false;
+            btn.innerHTML = `<span style="font-size: 24px;">🔗</span> <div style="text-align: left;"><div style="font-weight: 800;">重新嘗試產生短網址</div></div>`;
+        };
+        document.body.appendChild(script);
+    }
+
     function triggerCopyPasscode() {
         const jsonStr = JSON.stringify(currentSharePayload);
         const encoded = LZString.compressToBase64(jsonStr);
         const passcode = "AIQZ-" + encoded;
 
         navigator.clipboard.writeText(passcode).then(() => {
-            alert("✅「魔法密語」已成功複製！\n\n這是一段純文字代碼，不怕被 Line 截斷。\n請將這段文字貼給 Alyssa，讓她在首頁上方貼上即可解鎖！");
+            alert("✅「魔法密語」已成功複製！\n\n這是一段純文字代碼，保證不會被 Line 截斷。\n請將這段文字貼給小朋友，讓她在首頁上方貼上即可解鎖！");
             closeModal('shareModal');
         }).catch(err => { alert("複製失敗，請重試。"); });
     }
 
-    // 分享方式二：利用系統 Share API 直接傳送實體檔案
     async function triggerShareFile() {
         const jsonStr = JSON.stringify(currentSharePayload);
         const blob = new Blob([jsonStr], {type: "application/json"});
@@ -510,24 +584,14 @@
         const fileName = `${safeTitle}.json`;
         const file = new File([blob], fileName, {type: "application/json"});
 
-        // 如果在 iPhone/iPad 上，這行會完美喚出 AirDrop 視窗
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
             try {
-                await navigator.share({
-                    title: currentSharePayload.title,
-                    text: '請接收這份 AI 專屬考卷檔',
-                    files: [file]
-                });
+                await navigator.share({ title: currentSharePayload.title, text: '請接收這份 AI 專屬考卷檔', files: [file] });
             } catch(e) { console.log("使用者取消分享或發生錯誤"); }
         } else {
-            // 如果是在不支援的瀏覽器(如桌機版 Chrome)，就直接幫他下載
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            a.click();
-            URL.revokeObjectURL(url);
-            alert(`✅ 考卷檔已下載為 ${fileName}。\n您可以透過 Email 或其他方式傳送這個檔案。`);
+            const a = document.createElement('a'); a.href = url; a.download = fileName; a.click(); URL.revokeObjectURL(url);
+            alert(`✅ 考卷檔已下載為 ${fileName}。\n您可以透過 Email 或其他方式傳送這個檔案給小朋友。`);
         }
         closeModal('shareModal');
     }
@@ -617,7 +681,7 @@
     function renderQuiz() {
         window.history.replaceState({}, document.title, window.location.pathname);
         document.getElementById('parentZone').style.display = 'none';
-        document.getElementById('receiveZone').style.display = 'none'; // 確保接收區塊也隱藏
+        document.getElementById('receiveZone').style.display = 'none'; 
         document.getElementById('historyZone').style.display = 'none';
         document.getElementById('reviewZone').style.display = 'none';
         document.getElementById('studentZone').style.display = 'block';
@@ -636,7 +700,6 @@
         currentQuizData.forEach((q, i) => {
             const card = document.createElement('div');
             card.className = 'question-card';
-            
             const svgHtml = q.svg ? `<div class="question-svg-container">${q.svg}</div>` : '';
 
             card.innerHTML = `
@@ -937,7 +1000,7 @@
             }
         });
 
-        document.getElementById('receiveZone').style.display = 'none'; // 隱藏接收區
+        document.getElementById('receiveZone').style.display = 'none'; 
         document.getElementById('historyZone').style.display = 'none';
         document.getElementById('reviewZone').style.display = 'block';
         window.scrollTo(0, 0);
