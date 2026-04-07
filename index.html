@@ -40,7 +40,6 @@
         .share-small-btn { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
         .view-ans-btn { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
         .del-btn { background: #fee2e2; color: #ef4444; }
-        .del-btn:hover { background: #fecaca; color: #b91c1c; }
         
         .view-detail-btn { background: #e2e8f0; color: #475569; padding: 6px 12px; font-size: 14px; border-radius: 8px; margin-left: 10px; width: auto; display: inline-block; box-shadow: none;}
         .view-detail-btn:hover { background: #cbd5e1; transform: scale(1.05); }
@@ -64,9 +63,6 @@
         .resize-canvas-btn { background: #f8fafc; color: #64748b; border: 2px dashed #cbd5e1; padding: 8px 14px; font-size: 14px; border-radius: 10px; width: auto; margin: 0; box-shadow: none; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
         .resize-canvas-btn:hover { background: #f1f5f9; border-color: #94a3b8; color: #475569; transform: scale(1.02); }
 
-        .review-img { width: 100%; max-width: 500px; border: 2px dashed #cbd5e1; border-radius: 12px; display: block; margin: 10px auto; background: #fff;}
-        .review-text-ans { font-size: 22px; font-weight: bold; color: #6C63FF; text-align: center; background: #f1f5f9; padding: 15px; border-radius: 12px; border: 2px dashed #cbd5e1; }
-
         .tools { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;}
         .tool-btn { flex: 1; min-width: 70px; padding: 12px 8px; font-size: 15px; background: #f1f5f9; border-radius: 10px; border: 2px solid transparent; color: #475569; font-weight: 800; box-shadow: none; margin-top: 0; }
         .tool-btn:hover { transform: none; background: #e2e8f0; }
@@ -74,6 +70,12 @@
         .tool-btn.active-pan { background: #fffbeb; color: #d97706; border-color: #f59e0b; }
         .undo-btn { background: #f3e8ff; color: #7e22ce; }
         .clear-btn { background: #fee2e2; color: #ef4444; }
+
+        /* 🎨 升級：調色盤樣式 */
+        .color-palette { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; background: #fff; padding: 10px 15px; border-radius: 12px; border: 1px solid #e2e8f0; justify-content: center;}
+        .color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.15);}
+        .color-swatch:hover { transform: scale(1.15); }
+        .color-swatch.active { border-color: #6C63FF; transform: scale(1.2); box-shadow: 0 4px 10px rgba(108, 99, 255, 0.4);}
         
         .feedback { padding: 20px; margin-top: 20px; border-radius: 16px; display: none; text-align: left; font-size: 18px; line-height: 1.6; animation: popIn 0.4s ease-out;}
         @keyframes popIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -120,6 +122,7 @@
             .section { padding: 15px; } .question-card { padding: 15px; } 
             .timer-panel { flex-direction: column; gap: 15px; align-items: stretch; text-align: center; }
             .alarm-setup { justify-content: center; }
+            .color-palette { flex-wrap: wrap; }
         }
         @media (max-width: 480px) {
             .card-actions { grid-template-columns: 1fr; gap: 8px; } button { font-size: 16px; padding: 14px; } 
@@ -131,7 +134,7 @@
 
 <div class="container">
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (雙語詳解無死角版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (教學白板版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <div style="display:flex; gap:10px; margin-top: 10px;">
@@ -147,12 +150,11 @@
         
         <h3>📝 建立新考卷 Create a New Quiz</h3>
         
-        <label class="setting-label">🌐 選擇題目語言 (Question Language):</label>
+        <label class="setting-label">🌐 選擇輸出語言 (Language):</label>
         <select id="langSelect">
             <option value="Traditional Chinese (繁體中文)">繁體中文 (Traditional Chinese)</option>
             <option value="English">English</option>
         </select>
-        <div style="font-size: 13px; color: #64748b; margin-top: 4px;">*註：無論題目選哪種語言，解答與解析皆會自動附上「中英雙語」。</div>
 
         <label class="setting-label">📎 上傳參考照片/PDF (自動壓縮防當機):</label>
         <div class="file-upload-wrapper">
@@ -164,7 +166,7 @@
         <textarea id="promptText" placeholder="例如：請出 3 題計算三角形角度的題目，並附上圖形。或是直接把文章貼在這邊讓它出題..."></textarea>
         
         <button onclick="generateQuiz()" id="genBtn">🚀 1. 綜合產生考卷 Generate Questions</button>
-        <p id="loading">✨ AI 正在撰寫題目與雙語詳解中... AI is processing...</p>
+        <p id="loading">✨ AI 正在撰寫題目與詳細解答中... AI is processing...</p>
 
         <div id="previewZone" style="display:none; margin-top:25px; background:#fff; padding:20px; border-radius:16px; border: 2px solid #e2e8f0;">
             <h3 style="margin-top:0; color: #4a5568;">📋 考卷預覽 Quiz Preview <span style="display:inline-block; background:#dcfce7; color:#166534; padding:3px 10px; border-radius:15px; font-size:12px; margin-left:10px;">💾 已存入題庫</span></h3>
@@ -199,9 +201,10 @@
     </div>
 
     <div id="reviewZone" class="section review-section">
-        <h1 style="color: #EC4899; font-size: 28px;">📸 測驗回顧 Review Attempt</h1>
+        <h1 style="color: #EC4899; font-size: 28px;">📸 測驗檢討與教學白板</h1>
+        <div style="text-align:center; color:#db2777; margin-top:-10px; margin-bottom:20px; font-weight:bold;">您可以在下方畫布繼續寫字或使用螢光筆標記，離開時會自動儲存！</div>
         <div id="reviewContainer"></div>
-        <button onclick="showHistory()" style="background:#94a3b8; margin-top:20px;">🔙 返回歷史紀錄 Back to History</button>
+        <button onclick="closeReviewAndSave()" style="background:#94a3b8; margin-top:20px;">🔙 儲存教學筆記並返回歷史 Save & Back</button>
     </div>
 
     <div id="historyZone" class="section history-section">
@@ -248,6 +251,10 @@
     let currentShareUrl = ""; 
     let canvases = [];
     let html5QrcodeScanner = null;
+    
+    // 儲存目前正在 Review 的狀態，方便存檔
+    let currentReviewQuizId = null;
+    let currentReviewAttemptIndex = null;
 
     let timerInterval = null;
     let startTime = 0;
@@ -389,17 +396,18 @@
         document.getElementById('genBtn').disabled = true; document.getElementById('loading').style.display = 'block';
         document.getElementById('previewZone').style.display = 'none';
 
-        // 🚀 強制設定：解答與解析必須中英雙語並陳
+        let finalInstruction = prompt;
+
         const sysPrompt = `You are an expert educational assistant. Create a quiz based strictly on the provided references and user instructions. 
         MUST output strictly as a JSON array of objects with keys: "question", "answer", "explanation", and optionally "svg". 
         - "question": The question text in exactly ${lang}.
-        - "answer": The final correct answer. MUST be provided in BOTH Traditional Chinese and English (e.g., "三角形 / Triangle").
-        - "explanation": Detailed step-by-step calculation or reasoning. MUST be provided in BOTH Traditional Chinese and English, clearly separated (e.g., "【中文解析】... \\n\\n【English Explanation】...").
+        - "answer": The final correct answer. MUST be provided in BOTH Traditional Chinese and English.
+        - "explanation": Detailed step-by-step calculation or reasoning. MUST be provided in BOTH Traditional Chinese and English, clearly separated.
         If a geometric shape, chart, or diagram is necessary, provide valid inline HTML SVG code as a string in the "svg" key. 
         CRITICAL SVG RULES: The SVG MUST contain a proper 'viewBox' attribute (e.g., viewBox="0 0 300 300"). DO NOT include hardcoded 'width' or 'height' attributes in the <svg> tag. Use clear contrasting colors.
         Return ONLY the pure JSON array. Do not include introductory text.`;
         
-        let apiParts = [{ text: sysPrompt + "\n\nUser Instructions:\n" + prompt }];
+        let apiParts = [{ text: sysPrompt + "\n\nUser Instructions:\n" + finalInstruction }];
         
         try {
             if (fileInput.files.length > 0) {
@@ -479,7 +487,7 @@
 
     function triggerCopyLink() {
         navigator.clipboard.writeText(currentShareUrl).then(() => {
-            alert("✅ 考卷連結已成功壓縮並複製！\n這個短網址可以安全地在 iPad 貼上或透過 Line 傳送，不再怕被截斷囉！");
+            alert("✅ 考卷連結已成功壓縮並複製！\n這個短網址可以安全地在 iPad 貼上或透過 Line 傳送。");
             closeModal('shareModal');
         }).catch(err => { alert("複製失敗，請重試。"); });
     }
@@ -504,9 +512,7 @@
         if(alarmTimeSeconds > 0 && !alarmTriggered && elapsed >= alarmTimeSeconds) {
             alarmTriggered = true;
             playAlarmSound();
-            setTimeout(() => {
-                alert("⏰ 叮鈴鈴！您設定的目標時間到囉！趕快收尾交卷吧！");
-            }, 100);
+            setTimeout(() => { alert("⏰ 叮鈴鈴！您設定的目標時間到囉！趕快收尾交卷吧！"); }, 100);
         }
     }
 
@@ -540,6 +546,35 @@
         playBeep(now); playBeep(now + 0.3); playBeep(now + 0.6);
     }
 
+    // 🎨 產生共用的畫布工具列與調色盤 HTML
+    function getCanvasToolbarHTML(i) {
+        return `
+            <div class="tools">
+                <button class="tool-btn active" id="pen_${i}" onclick="setTool(${i}, 'pen')">✏️ 畫筆</button>
+                <button class="tool-btn" id="highlighter_${i}" onclick="setTool(${i}, 'highlighter')">🖍️ 螢光筆</button>
+                <button class="tool-btn" id="eraser_${i}" onclick="setTool(${i}, 'eraser')">🧽 橡皮</button>
+                <button class="tool-btn" id="pan_${i}" onclick="setTool(${i}, 'pan')">🖐️ 滑動</button>
+                <button class="tool-btn undo-btn" onclick="undoCanvas(${i})">↩️ 復原</button>
+                <button class="tool-btn clear-btn" onclick="clearCanvas(${i})">🗑️ 清空</button>
+            </div>
+            <div class="color-palette" id="palette_${i}">
+                <div class="color-swatch active" style="background:#1e293b;" onclick="setColor(${i}, '#1e293b', this)" title="黑筆"></div>
+                <div class="color-swatch" style="background:#ef4444;" onclick="setColor(${i}, '#ef4444', this)" title="紅筆"></div>
+                <div class="color-swatch" style="background:#3b82f6;" onclick="setColor(${i}, '#3b82f6', this)" title="藍筆"></div>
+                <div class="color-swatch" style="background:#22c55e;" onclick="setColor(${i}, '#22c55e', this)" title="綠筆"></div>
+                <div style="width: 2px; height: 24px; background: #cbd5e1; margin: 0 5px;"></div>
+                <div class="color-swatch" style="background:#fde047;" onclick="setColor(${i}, '#fde047', this)" title="黃色螢光筆"></div>
+                <div class="color-swatch" style="background:#fbcfe8;" onclick="setColor(${i}, '#fbcfe8', this)" title="粉紅螢光筆"></div>
+                <div class="color-swatch" style="background:#a5f3fc;" onclick="setColor(${i}, '#a5f3fc', this)" title="淺藍螢光筆"></div>
+            </div>
+            <div class="canvas-container"><canvas id="canvas_${i}"></canvas></div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+                <button class="resize-canvas-btn" onclick="resizeCanvas(${i}, 320)">➕ 畫布太小？往下加長！</button>
+                <button class="resize-canvas-btn" onclick="resizeCanvas(${i}, -320)">➖ 縮短</button>
+            </div>
+        `;
+    }
+
     function renderQuiz() {
         window.history.replaceState({}, document.title, window.location.pathname);
         document.getElementById('parentZone').style.display = 'none';
@@ -570,18 +605,7 @@
                 <div class="input-group"><h4>⌨️ 鍵盤打字 Type your answer</h4><input type="text" id="textInput_${i}" class="text-ans-input" autocomplete="off" placeholder="..."></div>
                 <div class="input-group" style="background: #fff; border: 2px dashed #e2e8f0; padding-bottom:10px;">
                     <h4>✏️ 或是動手畫畫 Or draw it here</h4>
-                    <div class="tools">
-                        <button class="tool-btn active" id="pen_${i}" onclick="setTool(${i}, 'pen')">✏️ 畫筆</button>
-                        <button class="tool-btn" id="eraser_${i}" onclick="setTool(${i}, 'eraser')">🧽 橡皮擦</button>
-                        <button class="tool-btn" id="pan_${i}" onclick="setTool(${i}, 'pan')">🖐️ 滑動畫布</button>
-                        <button class="tool-btn undo-btn" onclick="undoCanvas(${i})">↩️ 上一步</button>
-                        <button class="tool-btn clear-btn" onclick="clearCanvas(${i})">🗑️ 清空</button>
-                    </div>
-                    <div class="canvas-container"><canvas id="canvas_${i}"></canvas></div>
-                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
-                        <button class="resize-canvas-btn" onclick="resizeCanvas(${i}, 320)">➕ 畫布太小？往下加長！</button>
-                        <button class="resize-canvas-btn" onclick="resizeCanvas(${i}, -320)">➖ 縮短</button>
-                    </div>
+                    ${getCanvasToolbarHTML(i)}
                 </div>
                 <div class="feedback" id="f_${i}"></div>
             `;
@@ -591,15 +615,49 @@
         window.scrollTo(0, 0);
     }
 
+    // 🎨 畫筆狀態套用核心
+    function applyContextSettings(i) {
+        const c = canvases[i];
+        const ctx = c.ctx;
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        
+        if (c.tool === 'pen') {
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.globalAlpha = 1.0;
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = c.penColor;
+            c.canvas.style.touchAction = 'none';
+            c.canvas.style.cursor = 'crosshair';
+        } else if (c.tool === 'highlighter') {
+            ctx.globalCompositeOperation = 'source-over'; 
+            ctx.globalAlpha = 0.4; // 半透明
+            ctx.lineWidth = 25; // 粗筆觸
+            ctx.strokeStyle = c.highlighterColor;
+            c.canvas.style.touchAction = 'none';
+            c.canvas.style.cursor = 'crosshair';
+        } else if (c.tool === 'eraser') {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.globalAlpha = 1.0;
+            ctx.lineWidth = 30;
+            c.canvas.style.touchAction = 'none';
+            c.canvas.style.cursor = 'crosshair';
+        } else if (c.tool === 'pan') {
+            c.canvas.style.touchAction = 'auto';
+            c.canvas.style.cursor = 'grab';
+        }
+    }
+
     function initCanvas(index) {
         const canvas = document.getElementById(`canvas_${index}`); const ctx = canvas.getContext('2d'); const ratio = window.devicePixelRatio || 1;
         canvas.style.height = '320px'; 
         const rect = canvas.parentElement.getBoundingClientRect();
         canvas.width = rect.width * ratio; canvas.height = 320 * ratio; ctx.scale(ratio, ratio);
         
-        ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = 4; ctx.strokeStyle = "#1e293b";
-        canvas.style.touchAction = 'none'; 
-        let drawing = false; let lx, ly; canvases[index] = { canvas, ctx, tool: 'pen', history: [] };
+        // 預設為深藍黑筆，黃色螢光筆
+        canvases[index] = { canvas, ctx, tool: 'pen', penColor: '#1e293b', highlighterColor: '#fde047', history: [] };
+        applyContextSettings(index);
+        
+        let drawing = false; let lx, ly; 
         
         const getXY = (e) => { const r = canvas.getBoundingClientRect(); const cx = e.touches ? e.touches[0].clientX : e.clientX; const cy = e.touches ? e.touches[0].clientY : e.clientY; return { x: cx - r.left, y: cy - r.top }; };
         const start = (e) => { 
@@ -632,19 +690,45 @@
         c.canvas.height = newCssHeight * ratio;
 
         c.ctx.scale(ratio, ratio);
-        c.ctx.lineCap = 'round'; c.ctx.lineJoin = 'round'; 
-        c.ctx.lineWidth = c.tool === 'pen' ? 4 : 25; c.ctx.strokeStyle = "#1e293b";
-        c.ctx.globalCompositeOperation = c.tool === 'pen' ? 'source-over' : 'destination-out';
+        
+        // 畫布重新設定後，必須先把圖貼回來，再套用工具設定
+        c.ctx.save(); c.ctx.setTransform(1, 0, 0, 1, 0, 0); 
+        c.ctx.globalAlpha = 1.0; c.ctx.globalCompositeOperation = 'source-over';
+        c.ctx.drawImage(tempCanvas, 0, 0); c.ctx.restore();
 
-        c.ctx.save(); c.ctx.setTransform(1, 0, 0, 1, 0, 0); c.ctx.drawImage(tempCanvas, 0, 0); c.ctx.restore();
+        applyContextSettings(i);
     }
 
     function setTool(i, t) {
         const c = canvases[i]; c.tool = t;
-        document.getElementById(`pen_${i}`).classList.toggle('active', t==='pen'); document.getElementById(`eraser_${i}`).classList.toggle('active', t==='eraser'); document.getElementById(`pan_${i}`).classList.toggle('active-pan', t==='pan');
-        if (t === 'pan') { c.canvas.style.touchAction = 'auto'; c.canvas.style.cursor = 'grab'; } 
-        else { c.canvas.style.touchAction = 'none'; c.canvas.style.cursor = 'crosshair'; c.ctx.globalCompositeOperation = t==='pen' ? 'source-over' : 'destination-out'; c.ctx.lineWidth = t==='pen' ? 4 : 25; }
+        document.getElementById(`pen_${i}`).classList.toggle('active', t==='pen'); 
+        document.getElementById(`highlighter_${i}`).classList.toggle('active', t==='highlighter'); 
+        document.getElementById(`eraser_${i}`).classList.toggle('active', t==='eraser'); 
+        document.getElementById(`pan_${i}`).classList.toggle('active-pan', t==='pan');
+        applyContextSettings(i);
     }
+
+    // 🎨 切換顏色邏輯
+    window.setColor = function(i, hex, element) {
+        const c = canvases[i];
+        // 判斷選到的是不是螢光筆色系 (黃、粉、淺藍)
+        const isHighlighterColor = ['#fde047', '#fbcfe8', '#a5f3fc'].includes(hex);
+        
+        if (isHighlighterColor) {
+            c.highlighterColor = hex;
+            if (c.tool !== 'highlighter') setTool(i, 'highlighter');
+        } else {
+            c.penColor = hex;
+            if (c.tool !== 'pen') setTool(i, 'pen');
+        }
+        
+        // 更新按鈕光圈狀態
+        const palette = document.getElementById(`palette_${i}`);
+        palette.querySelectorAll('.color-swatch').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        
+        applyContextSettings(i);
+    };
 
     function undoCanvas(i) {
         const c = canvases[i];
@@ -652,9 +736,9 @@
             const img = new Image();
             img.onload = () => {
                 c.ctx.clearRect(0, 0, c.canvas.width, c.canvas.height);
-                const prevMode = c.ctx.globalCompositeOperation; c.ctx.globalCompositeOperation = 'source-over';
-                c.ctx.save(); c.ctx.setTransform(1, 0, 0, 1, 0, 0); c.ctx.drawImage(img, 0, 0); c.ctx.restore();
-                c.ctx.globalCompositeOperation = prevMode;
+                c.ctx.save(); c.ctx.setTransform(1, 0, 0, 1, 0, 0); 
+                c.ctx.globalAlpha = 1.0; c.ctx.globalCompositeOperation = 'source-over';
+                c.ctx.drawImage(img, 0, 0); c.ctx.restore();
             };
             img.src = c.history.pop();
         }
@@ -687,25 +771,30 @@
             let promptBase = "";
             let savedImageBase64 = null; 
 
-            if (textInputVal !== "") {
-                promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Student typed: "${textInputVal}". Does it mean the same? Ignore minor typos. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
-                requestBody.contents[0].parts.push({ text: promptBase });
-            } else {
-                const canvasEl = canvases[i].canvas; const ctx = canvases[i].ctx;
-                const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height).data;
-                let isBlank = true;
-                for (let j = 3; j < imgData.length; j += 4) { if (imgData[j] > 0) { isBlank = false; break; } }
-                if (isBlank) return { index: i, question: qData.question, svg: qData.svg, ans: ans, explanation: explanationText, studentText: "", studentImg: null, correct: false, msg: "", isBlank: true, isError: false };
-
+            // 存下學生畫的圖
+            const canvasEl = canvases[i].canvas; const ctx = canvases[i].ctx;
+            const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height).data;
+            let isBlank = true;
+            for (let j = 3; j < imgData.length; j += 4) { if (imgData[j] > 0) { isBlank = false; break; } }
+            
+            if (!isBlank || textInputVal === "") {
+                // 如果有畫圖，或是兩者都沒寫(空白)
                 const tempCanvas = document.createElement('canvas'); tempCanvas.width = canvasEl.width; tempCanvas.height = canvasEl.height;
                 const tempCtx = tempCanvas.getContext('2d'); tempCtx.fillStyle = '#ffffff'; tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height); tempCtx.drawImage(canvasEl, 0, 0);
-                
                 const fullBase64 = tempCanvas.toDataURL("image/jpeg", 0.4);
-                const img = fullBase64.split(',')[1];
                 savedImageBase64 = fullBase64; 
-
-                promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Does this handwritten image match? Ignore bad handwriting. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
-                requestBody.contents[0].parts.push({ text: promptBase }); requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: img } });
+                
+                if (isBlank && textInputVal === "") {
+                    return { index: i, question: qData.question, svg: qData.svg, ans: ans, explanation: explanationText, studentText: "", studentImg: null, correct: false, msg: "", isBlank: true, isError: false };
+                } else if (!isBlank) {
+                    promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Does this handwritten image match? Ignore bad handwriting. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
+                    requestBody.contents[0].parts.push({ text: promptBase }); requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: fullBase64.split(',')[1] } });
+                }
+            }
+            
+            if (textInputVal !== "") {
+                promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Student typed: "${textInputVal}". Does it mean the same? Ignore minor typos. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
+                requestBody.contents[0].parts = [{ text: promptBase }]; // 優先採納文字輸入
             }
 
             try {
@@ -723,44 +812,19 @@
 
         results.forEach(res => {
             const f = document.getElementById(`f_${res.index}`);
-            
-            let feedbackText = "";
-            let feedbackClass = "";
+            let feedbackText = ""; let feedbackClass = "";
 
-            if (res.isBlank) { 
-                feedbackText = `❌ 哎呀，這題忘了寫喔！ You left this blank!<br><b style="color:#b91c1c;">標準答案 Ans: ${res.ans}</b>`; 
-                feedbackClass = 'wrong'; 
-            } 
-            else if (res.isError) { 
-                feedbackText = `⚠️ 閱卷連線不穩定，請家長幫忙看一下！<br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; 
-                feedbackClass = 'wrong'; 
-            } 
-            else if (res.correct) { 
-                feedbackText = `⭕ 答對了！ Correct!<br><span style="font-size:16px; color:#15803d;">老師說: ${res.msg}</span>`; 
-                feedbackClass = 'correct'; 
-                score++; 
-            } 
-            else { 
-                feedbackText = `❌ 不對喔！ Let's try again!<br><span style="font-size:16px; color:#b91c1c;">老師說: ${res.msg}</span><br><b style="color:#7f1d1d; margin-top:8px; display:block;">標準答案 Ans: ${res.ans}</b>`; 
-                feedbackClass = 'wrong'; 
-            }
+            if (res.isBlank) { feedbackText = `❌ 哎呀，這題忘了寫喔！ You left this blank!<br><b style="color:#b91c1c;">標準答案 Ans: ${res.ans}</b>`; feedbackClass = 'wrong'; } 
+            else if (res.isError) { feedbackText = `⚠️ 閱卷連線不穩定，請家長幫忙看一下！<br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; feedbackClass = 'wrong'; } 
+            else if (res.correct) { feedbackText = `⭕ 答對了！ Correct!<br><span style="font-size:16px; color:#15803d;">老師說: ${res.msg}</span>`; feedbackClass = 'correct'; score++; } 
+            else { feedbackText = `❌ 不對喔！ Let's try again!<br><span style="font-size:16px; color:#b91c1c;">老師說: ${res.msg}</span><br><b style="color:#7f1d1d; margin-top:8px; display:block;">標準答案 Ans: ${res.ans}</b>`; feedbackClass = 'wrong'; }
 
-            let explanationHtml = res.explanation ? `<div class="explanation-box"><b>💡 老師解析：</b><br>${res.explanation.replace(/\n/g, '<br>')}</div>` : '';
-            
+            let explanationHtml = res.explanation ? `<div class="explanation-box"><b>💡 雙語解析：</b><br>${res.explanation.replace(/\n/g, '<br>')}</div>` : '';
             f.className = `feedback ${feedbackClass}`;
             f.innerHTML = `<div>${feedbackText}</div> ${explanationHtml}`;
             f.style.display = 'block';
 
-            attemptDetails.push({ 
-                question: res.question, 
-                svg: res.svg, 
-                correctAnswer: res.ans, 
-                explanation: res.explanation,
-                studentText: res.studentText, 
-                studentImage: res.studentImg, 
-                isCorrect: res.correct && !res.isBlank && !res.isError, 
-                feedbackHtml: f.innerHTML 
-            });
+            attemptDetails.push({ question: res.question, svg: res.svg, correctAnswer: res.ans, explanation: res.explanation, studentText: res.studentText, studentImage: res.studentImg, isCorrect: res.correct && !res.isBlank && !res.isError, feedbackHtml: f.innerHTML });
         });
 
         status.innerText = `🎉 批改完成！總得分： ${score} / ${currentQuizData.length}`;
@@ -774,51 +838,108 @@
         let targetQuiz = library.find(q => q.id === quizId);
         if (targetQuiz) {
             const opts = { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
-            targetQuiz.attempts.unshift({ 
-                date: new Date().toLocaleString(undefined, opts), 
-                score: `${score} / ${total}`, 
-                timeSpent: timeSpent, 
-                details: details 
-            });
+            targetQuiz.attempts.unshift({ date: new Date().toLocaleString(undefined, opts), score: `${score} / ${total}`, timeSpent: timeSpent, details: details });
             localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
         }
     }
 
+    // 🚀 教學白板核心：打開歷史詳情，並注入可繪圖的畫布
     function showAttemptDetails(quizId, attemptIndex) {
         let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
         let targetQuiz = library.find(q => q.id === quizId);
         if (!targetQuiz || !targetQuiz.attempts[attemptIndex]) return;
+        
+        // 儲存當前修改對象
+        currentReviewQuizId = quizId;
+        currentReviewAttemptIndex = attemptIndex;
 
         const attemptData = targetQuiz.attempts[attemptIndex];
         const container = document.getElementById('reviewContainer');
-        
-        let timeHtml = attemptData.timeSpent ? `<div style="text-align:center; font-size:18px; color:#0369a1; font-weight:bold; margin-bottom:20px; background:#e0f2fe; padding:10px; border-radius:10px;">⏱️ 本次測驗耗時：${attemptData.timeSpent}</div>` : '';
-        
-        container.innerHTML = timeHtml;
+        container.innerHTML = attemptData.timeSpent ? `<div style="text-align:center; font-size:18px; color:#0369a1; font-weight:bold; margin-bottom:20px; background:#e0f2fe; padding:10px; border-radius:10px;">⏱️ 本次測驗耗時：${attemptData.timeSpent}</div>` : '';
+
+        canvases = []; // 重置全域畫布陣列
 
         attemptData.details.forEach((item, i) => {
             const card = document.createElement('div');
             card.className = 'question-card';
-            let studentAnsHtml = '';
-            if (item.studentText) { studentAnsHtml = `<div class="review-text-ans">${item.studentText}</div>`; } 
-            else if (item.studentImage) { studentAnsHtml = `<img src="${item.studentImage}" class="review-img" alt="Student's drawing">`; } 
-            else { studentAnsHtml = `<div class="review-text-ans" style="color:#94a3b8; border-style:dashed;">(空白未作答 Blank)</div>`; }
-
-            const feedbackClass = item.isCorrect ? 'correct' : 'wrong';
+            
             const svgHtml = item.svg ? `<div class="question-svg-container">${item.svg}</div>` : '';
+            const feedbackClass = item.isCorrect ? 'correct' : 'wrong';
 
             card.innerHTML = `
                 <div class="question-text"><span style="color:#94a3b8; font-size:18px;">Q${i+1}.</span><br>${item.question}</div>
                 ${svgHtml}
-                <div style="margin-bottom: 15px;"><h4 style="color: #64748b; margin-bottom: 8px; font-size: 16px;">當時的作答內容：</h4>${studentAnsHtml}</div>
+                <div class="input-group">
+                    <h4>⌨️ 當時的打字內容 (Type Answer)</h4>
+                    <div class="text-ans-input" style="padding:10px; border:2px solid #e2e8f0; color:#6C63FF; font-weight:bold;">${item.studentText || '<span style="color:#94a3b8; font-weight:normal;">(未打字)</span>'}</div>
+                </div>
+                <div class="input-group" style="background: #fff; border: 2px dashed #e2e8f0; padding-bottom:10px;">
+                    <h4>👨‍🏫 教學與訂正白板 (Teacher's Whiteboard)</h4>
+                    ${getCanvasToolbarHTML(i)}
+                </div>
                 <div class="feedback ${feedbackClass}" style="display:block; text-align:left;">${item.feedbackHtml}</div>
             `;
             container.appendChild(card);
         });
 
+        // 載入當初學生寫的圖形
+        attemptData.details.forEach((item, i) => {
+            initCanvas(i);
+            // 預設改成紅筆，方便家長批改
+            setColor(i, '#ef4444', document.querySelectorAll(`#palette_${i} .color-swatch`)[1]);
+
+            if (item.studentImage) {
+                const img = new Image();
+                img.onload = () => {
+                    const c = canvases[i];
+                    const ratio = window.devicePixelRatio || 1;
+                    const imgDisplayHeight = img.height / ratio;
+                    
+                    // 若當初學生有拉長畫布，把畫布調回原來的高度
+                    if (imgDisplayHeight > 320) {
+                        c.canvas.style.height = imgDisplayHeight + 'px';
+                        c.canvas.height = img.height;
+                        applyContextSettings(i); // 重設參數
+                    }
+                    
+                    c.ctx.save(); c.ctx.setTransform(1,0,0,1,0,0);
+                    c.ctx.globalAlpha = 1.0; c.ctx.globalCompositeOperation = 'source-over';
+                    c.ctx.drawImage(img, 0, 0); c.ctx.restore();
+                    
+                    c.history = [c.canvas.toDataURL()]; // 覆蓋歷史第一步為學生的原圖
+                };
+                img.src = item.studentImage;
+            }
+        });
+
         document.getElementById('historyZone').style.display = 'none';
         document.getElementById('reviewZone').style.display = 'block';
         window.scrollTo(0, 0);
+    }
+
+    // 🚀 教學白板核心：儲存家長寫上去的筆跡
+    function closeReviewAndSave() {
+        if (currentReviewQuizId !== null && currentReviewAttemptIndex !== null) {
+            let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
+            let targetQuiz = library.find(q => q.id === currentReviewQuizId);
+            
+            if (targetQuiz && targetQuiz.attempts[currentReviewAttemptIndex]) {
+                targetQuiz.attempts[currentReviewAttemptIndex].details.forEach((item, i) => {
+                    if (canvases[i]) {
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = canvases[i].canvas.width; tempCanvas.height = canvases[i].canvas.height;
+                        const tCtx = tempCanvas.getContext('2d');
+                        tCtx.fillStyle = '#ffffff'; tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                        tCtx.drawImage(canvases[i].canvas, 0, 0);
+                        
+                        // 覆蓋為加上家長筆跡的新圖檔
+                        item.studentImage = tempCanvas.toDataURL("image/jpeg", 0.4);
+                    }
+                });
+                localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
+            }
+        }
+        showHistory();
     }
 
     function showQuizAnswers(quizId) {
@@ -832,7 +953,6 @@
         
         targetQuiz.quizData.forEach((q, i) => {
             let explanationHtml = q.explanation ? `<div style="color:#475569; font-size:15px; margin-top:8px; padding-top:8px; border-top:1px dashed #cbd5e1;"><b>💡 雙語解析：</b><br>${q.explanation.replace(/\n/g, '<br>')}</div>` : '';
-            
             html += `
                 <div style="margin-bottom:15px; padding:15px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0;">
                     <div style="font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:18px;">Q${i+1}: ${q.question}</div>
@@ -893,9 +1013,7 @@
         document.getElementById('translateStatusText').innerText = hasChinese ? "Converting quiz to English..." : "正在將考卷翻譯為繁體中文...";
         document.getElementById('translateModal').style.display = 'flex';
 
-        // 🚀 更新翻譯指令：確保雙語解答與解析不被破壞
-        const sysPrompt = `You are translating a quiz. For the "question" field, translate it into exactly ${targetLanguage}. For the "answer" and "explanation" fields, you MUST provide them in BOTH Traditional Chinese and English, regardless of the target language. 
-        Maintain the exact JSON array structure with "question", "answer", "explanation", and "svg" keys. Do NOT wrap in markdown \`\`\`json. Return ONLY pure JSON.`;
+        const sysPrompt = `Translate the following quiz into ${targetLanguage}. Maintain the exact JSON array structure with "question", "answer", "explanation", and "svg" keys. Do NOT wrap in markdown \`\`\`json. Return ONLY pure JSON.`;
         
         try {
             const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
@@ -943,7 +1061,7 @@
                             <div style="display:flex; align-items:center;">
                                 ${attempt.timeSpent ? `<span class="attempt-time">🕒 ${attempt.timeSpent}</span>` : ''}
                                 <span class="attempt-score">${attempt.score}</span>
-                                ${attempt.details ? `<button class="view-detail-btn" onclick="showAttemptDetails('${quiz.id}', ${idx})">👁️ 詳情</button>` : ''}
+                                ${attempt.details ? `<button class="view-detail-btn" onclick="showAttemptDetails('${quiz.id}', ${idx})">👁️ 教學白板</button>` : ''}
                             </div>
                         </div>
                     `).join('') + '</div>';
