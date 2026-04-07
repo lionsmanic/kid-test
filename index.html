@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI Smart Quiz Hub Pro Max</title>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -26,9 +25,7 @@
         button:active { transform: translateY(1px); }
         button:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; transform: none; }
         
-        .qr-btn { background: linear-gradient(135deg, #FF6584 0%, #E91E63 100%); box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3); }
         .share-btn { background: linear-gradient(135deg, #10B981 0%, #059669 100%); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
-        .scan-btn { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
         .history-btn { background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); }
         .grade-btn { background: linear-gradient(135deg, #EC4899 0%, #BE185D 100%); font-size: 24px; padding: 20px; box-shadow: 0 8px 25px rgba(236, 72, 153, 0.4); }
         
@@ -40,11 +37,10 @@
         .share-small-btn { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
         .view-ans-btn { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
         .del-btn { background: #fee2e2; color: #ef4444; }
+        .del-btn:hover { background: #fecaca; color: #b91c1c; }
         
         .view-detail-btn { background: #e2e8f0; color: #475569; padding: 6px 12px; font-size: 14px; border-radius: 8px; margin-left: 10px; width: auto; display: inline-block; box-shadow: none;}
         .view-detail-btn:hover { background: #cbd5e1; transform: scale(1.05); }
-
-        #scanner-container { display: none; margin-top: 15px; border: 3px solid #F59E0B; border-radius: 16px; overflow: hidden; background: #fff;}
 
         .question-card { background: #ffffff; padding: 25px; margin: 20px 0; border-radius: 20px; border: none; box-shadow: 0 6px 15px rgba(0,0,0,0.06); border-top: 6px solid var(--secondary); }
         .question-text { font-size: 24px; font-weight: 800; margin-bottom: 20px; color: #2D3748; line-height: 1.5; }
@@ -63,6 +59,9 @@
         .resize-canvas-btn { background: #f8fafc; color: #64748b; border: 2px dashed #cbd5e1; padding: 8px 14px; font-size: 14px; border-radius: 10px; width: auto; margin: 0; box-shadow: none; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
         .resize-canvas-btn:hover { background: #f1f5f9; border-color: #94a3b8; color: #475569; transform: scale(1.02); }
 
+        .review-img { width: 100%; max-width: 500px; border: 2px dashed #cbd5e1; border-radius: 12px; display: block; margin: 10px auto; background: #fff;}
+        .review-text-ans { font-size: 22px; font-weight: bold; color: #6C63FF; text-align: center; background: #f1f5f9; padding: 15px; border-radius: 12px; border: 2px dashed #cbd5e1; }
+
         .tools { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;}
         .tool-btn { flex: 1; min-width: 70px; padding: 12px 8px; font-size: 15px; background: #f1f5f9; border-radius: 10px; border: 2px solid transparent; color: #475569; font-weight: 800; box-shadow: none; margin-top: 0; }
         .tool-btn:hover { transform: none; background: #e2e8f0; }
@@ -71,7 +70,6 @@
         .undo-btn { background: #f3e8ff; color: #7e22ce; }
         .clear-btn { background: #fee2e2; color: #ef4444; }
 
-        /* 🎨 升級：調色盤樣式 */
         .color-palette { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; background: #fff; padding: 10px 15px; border-radius: 12px; border: 1px solid #e2e8f0; justify-content: center;}
         .color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.15);}
         .color-swatch:hover { transform: scale(1.15); }
@@ -117,6 +115,9 @@
         .alarm-setup input { width: 60px; padding: 6px; margin: 0; border: 1px solid #cbd5e1; font-size: 16px; text-align: center;}
         .alarm-setup button { margin: 0; padding: 6px 12px; font-size: 14px; width: auto; background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);}
 
+        /* 🚀 新增：首頁的接收區塊樣式 */
+        .receive-zone { background: #fff; padding: 25px; border-radius: 16px; border: 2px dashed #F59E0B; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.05); }
+
         @media (max-width: 768px) {
             body { padding: 10px; } .container { padding: 20px; border-radius: 16px; }
             .section { padding: 15px; } .question-card { padding: 15px; } 
@@ -133,28 +134,45 @@
 <body>
 
 <div class="container">
+
+    <div id="receiveZone" class="receive-zone">
+        <h3 style="margin-top:0; color:#D97706; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            📥 接收考卷 (Receive Quiz)
+        </h3>
+        <p style="text-align:center; color:#64748b; font-size:14px; margin-top:-10px;">請貼上魔法密語，或選擇考卷檔案</p>
+        
+        <div style="display: flex; gap: 10px; flex-direction: column;">
+            <textarea id="passcodeInput" placeholder="請在此貼上「AIQZ-」開頭的魔法密語..." style="height: 80px; font-family: monospace; border-color:#fcd34d; background:#fefce8;"></textarea>
+            <button onclick="loadFromPasscode()" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);">🚀 貼上密語，解鎖考卷</button>
+        </div>
+        
+        <div style="text-align: center; margin: 15px 0; color: #cbd5e1; font-weight: bold; position: relative;">
+            <span style="background: #fff; padding: 0 10px; position: relative; z-index: 1;">或 (OR)</span>
+            <hr style="position: absolute; top: 50%; left: 0; right: 0; border: none; border-top: 1px dashed #cbd5e1; margin: 0; z-index: 0;">
+        </div>
+        
+        <div style="text-align: center;">
+            <label for="importQuizFile" style="background: #f1f5f9; color: #475569; padding: 12px 25px; border-radius: 12px; cursor: pointer; font-weight: bold; display: inline-block; border: 2px solid #cbd5e1; transition: 0.2s;">
+                📁 從裝置選擇考卷檔案 (.json)
+            </label>
+            <input type="file" id="importQuizFile" accept=".json" style="display:none;" onchange="loadFromFile(event)">
+        </div>
+    </div>
+
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (教學白板版)</h2>
+        <h2>✨ AI 魔法綜合出題中心</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
-        <div style="display:flex; gap:10px; margin-top: 10px;">
-            <button class="scan-btn" onclick="startScanner()">📷 從 iPad 掃描網址 Scan QR</button>
-        </div>
-        
-        <div id="scanner-container">
-            <div id="reader" style="width: 100%;"></div>
-            <button onclick="stopScanner()" style="background: #94a3b8; border-radius: 0;">❌ 取消掃描 Cancel</button>
-        </div>
-
         <hr style="border: 1px dashed #cbd5e1; margin: 30px 0;">
         
         <h3>📝 建立新考卷 Create a New Quiz</h3>
         
-        <label class="setting-label">🌐 選擇輸出語言 (Language):</label>
+        <label class="setting-label">🌐 選擇題目語言 (Question Language):</label>
         <select id="langSelect">
             <option value="Traditional Chinese (繁體中文)">繁體中文 (Traditional Chinese)</option>
             <option value="English">English</option>
         </select>
+        <div style="font-size: 13px; color: #64748b; margin-top: 4px;">*註：解答與解析皆會自動附上「中英雙語」。</div>
 
         <label class="setting-label">📎 上傳參考照片/PDF (自動壓縮防當機):</label>
         <div class="file-upload-wrapper">
@@ -166,7 +184,7 @@
         <textarea id="promptText" placeholder="例如：請出 3 題計算三角形角度的題目，並附上圖形。或是直接把文章貼在這邊讓它出題..."></textarea>
         
         <button onclick="generateQuiz()" id="genBtn">🚀 1. 綜合產生考卷 Generate Questions</button>
-        <p id="loading">✨ AI 正在撰寫題目與詳細解答中... AI is processing...</p>
+        <p id="loading">✨ AI 正在撰寫題目與雙語詳解中... AI is processing...</p>
 
         <div id="previewZone" style="display:none; margin-top:25px; background:#fff; padding:20px; border-radius:16px; border: 2px solid #e2e8f0;">
             <h3 style="margin-top:0; color: #4a5568;">📋 考卷預覽 Quiz Preview <span style="display:inline-block; background:#dcfce7; color:#166534; padding:3px 10px; border-radius:15px; font-size:12px; margin-left:10px;">💾 已存入題庫</span></h3>
@@ -217,15 +235,24 @@
 <div id="shareModal" class="modal-overlay">
     <div class="modal-content" style="border: 4px solid #10B981;">
         <h3 style="margin-top:0; color: #059669;">📤 傳送考卷給小朋友</h3>
-        <p style="color:#64748b; font-size: 14px; margin-bottom: 20px;">請選擇最方便的傳送方式：</p>
-        <button class="share-option-btn" style="color: #2563EB; border-color: #bfdbfe; background: #eff6ff;" onclick="triggerNativeShare()">
+        <p style="color:#64748b; font-size: 14px; margin-bottom: 20px; line-height: 1.5;">圖形考卷資料量極大，為了防止 Line 把網址截斷，請選擇以下方式：</p>
+        
+        <button class="share-option-btn" style="color: #D97706; border-color: #fde68a; background: #fffbeb;" onclick="triggerCopyPasscode()">
+            <span style="font-size: 24px;">📋</span> 
+            <div style="text-align: left;">
+                <div style="font-weight: 800;">複製「魔法密語」(最推薦)</div>
+                <div style="font-size: 12px; font-weight: normal;">貼到 Line，不怕被截斷，小孩直接複製解鎖</div>
+            </div>
+        </button>
+        
+        <button class="share-option-btn" style="color: #2563EB; border-color: #bfdbfe; background: #eff6ff;" onclick="triggerShareFile()">
             <span style="font-size: 24px;">✈️</span> 
-            <div style="text-align: left;"><div style="font-weight: 800;">AirDrop / 系統分享</div><div style="font-size: 12px; font-weight: normal;">直接傳送至附近的 iPad 或 Line</div></div>
+            <div style="text-align: left;">
+                <div style="font-weight: 800;">傳送/下載考卷檔 (.json)</div>
+                <div style="font-size: 12px; font-weight: normal;">直接 AirDrop 到 iPad，100% 穩定不斷線</div>
+            </div>
         </button>
-        <button class="share-option-btn" style="color: #059669; border-color: #bbf7d0; background: #f0fdf4;" onclick="triggerCopyLink()">
-            <span style="font-size: 24px;">🔗</span> 
-            <div style="text-align: left;"><div style="font-weight: 800;">複製考卷連結</div><div style="font-size: 12px; font-weight: normal;">可在 iPad 貼上，或自行傳送</div></div>
-        </button>
+
         <button class="modal-close" onclick="closeModal('shareModal')">關閉 Close</button>
     </div>
 </div>
@@ -248,11 +275,9 @@
 <script>
     let currentQuizData = [];
     let currentQuizId = null; 
-    let currentShareUrl = ""; 
+    let currentSharePayload = null; // 🚀 用來暫存要分享的物件
     let canvases = [];
-    let html5QrcodeScanner = null;
     
-    // 儲存目前正在 Review 的狀態，方便存檔
     let currentReviewQuizId = null;
     let currentReviewAttemptIndex = null;
 
@@ -267,30 +292,53 @@
         const savedLang = localStorage.getItem('quizLanguage');
         if (savedKey) document.getElementById('apiKey').value = savedKey;
         if (savedLang) document.getElementById('langSelect').value = savedLang;
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const dataParam = urlParams.get('d');
-        const compressedParam = urlParams.get('c'); 
-
-        if (compressedParam) {
-            try {
-                const jsonStr = LZString.decompressFromEncodedURIComponent(compressedParam);
-                const payload = JSON.parse(jsonStr);
-                currentQuizData = payload.data;
-                currentQuizId = "quiz_" + Date.now().toString(); 
-                saveQuizToLibrary(currentQuizId, payload.title || "傳送過來的測驗", currentQuizData);
-                renderQuiz();
-            } catch (e) { alert("讀取壓縮考卷失敗 Failed to load compressed quiz data!"); }
-        } else if (dataParam) {
-            try {
-                const payload = JSON.parse(decodeURIComponent(escape(window.atob(dataParam))));
-                currentQuizData = payload.data;
-                currentQuizId = "quiz_" + Date.now().toString(); 
-                saveQuizToLibrary(currentQuizId, payload.title || "傳送過來的測驗", currentQuizData);
-                renderQuiz();
-            } catch (e) { alert("讀取舊版考卷失敗 Failed to load quiz data!"); }
-        }
     };
+
+    // 🚀 核心接收功能 1：從魔法密語載入
+    function loadFromPasscode() {
+        let code = document.getElementById('passcodeInput').value.trim();
+        if (!code) { alert("請先貼上魔法密語喔！"); return; }
+        try {
+            // 自動移除前綴，增加防呆
+            if (code.startsWith("AIQZ-")) code = code.substring(5);
+            
+            const jsonStr = LZString.decompressFromBase64(code);
+            if (!jsonStr) throw new Error("解碼為空");
+            
+            const payload = JSON.parse(jsonStr);
+            currentQuizData = payload.data;
+            currentQuizId = "quiz_" + Date.now().toString();
+            saveQuizToLibrary(currentQuizId, payload.title || "從密語載入的測驗", currentQuizData);
+            
+            document.getElementById('passcodeInput').value = ''; // 清空輸入框
+            document.getElementById('receiveZone').style.display = 'none'; // 隱藏接收區塊
+            renderQuiz();
+        } catch(e) {
+            alert("❌ 無效的魔法密語，或密語不完整！請確認有複製到最後一個字。");
+        }
+    }
+
+    // 🚀 核心接收功能 2：從檔案載入
+    function loadFromFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const payload = JSON.parse(e.target.result);
+                currentQuizData = payload.data;
+                currentQuizId = "quiz_" + Date.now().toString();
+                saveQuizToLibrary(currentQuizId, payload.title || "從檔案載入的測驗", currentQuizData);
+                
+                event.target.value = ''; // 重置 file input
+                document.getElementById('receiveZone').style.display = 'none';
+                renderQuiz();
+            } catch(err) {
+                alert("❌ 檔案讀取失敗，請確認這是否為有效的 .json 考卷檔。");
+            }
+        };
+        reader.readAsText(file);
+    }
 
     function updateFileList() {
         const fileInput = document.getElementById('fileInput');
@@ -301,42 +349,6 @@
             for (let i = 0; i < fileInput.files.length; i++) html += `<span class="file-item">📄 ${fileInput.files[i].name}</span>`;
             fileListDiv.innerHTML = html;
         }
-    }
-
-    function startScanner() {
-        document.getElementById('scanner-container').style.display = 'block';
-        html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-    }
-
-    function onScanSuccess(decodedText, decodedResult) {
-        stopScanner();
-        try {
-            const url = new URL(decodedText);
-            const dataParam = url.searchParams.get('d');
-            const compressedParam = url.searchParams.get('c');
-            
-            if (compressedParam) {
-                const jsonStr = LZString.decompressFromEncodedURIComponent(compressedParam);
-                const payload = JSON.parse(jsonStr);
-                currentQuizData = payload.data;
-                currentQuizId = "quiz_" + Date.now().toString(); 
-                saveQuizToLibrary(currentQuizId, payload.title || "傳送過來的測驗", currentQuizData);
-                renderQuiz();
-            } else if (dataParam) {
-                const payload = JSON.parse(decodeURIComponent(escape(window.atob(dataParam))));
-                currentQuizData = payload.data;
-                currentQuizId = "quiz_" + Date.now().toString(); 
-                saveQuizToLibrary(currentQuizId, payload.title || "傳送過來的測驗", currentQuizData);
-                renderQuiz();
-            } else { alert("這不是有效的考卷條碼！"); }
-        } catch(e) { alert("無效的條碼格式。"); }
-    }
-
-    function onScanFailure(error) {}
-    function stopScanner() {
-        if(html5QrcodeScanner) html5QrcodeScanner.clear();
-        document.getElementById('scanner-container').style.display = 'none';
     }
 
     function closeModal(id) { 
@@ -396,8 +408,6 @@
         document.getElementById('genBtn').disabled = true; document.getElementById('loading').style.display = 'block';
         document.getElementById('previewZone').style.display = 'none';
 
-        let finalInstruction = prompt;
-
         const sysPrompt = `You are an expert educational assistant. Create a quiz based strictly on the provided references and user instructions. 
         MUST output strictly as a JSON array of objects with keys: "question", "answer", "explanation", and optionally "svg". 
         - "question": The question text in exactly ${lang}.
@@ -407,7 +417,7 @@
         CRITICAL SVG RULES: The SVG MUST contain a proper 'viewBox' attribute (e.g., viewBox="0 0 300 300"). DO NOT include hardcoded 'width' or 'height' attributes in the <svg> tag. Use clear contrasting colors.
         Return ONLY the pure JSON array. Do not include introductory text.`;
         
-        let apiParts = [{ text: sysPrompt + "\n\nUser Instructions:\n" + finalInstruction }];
+        let apiParts = [{ text: sysPrompt + "\n\nUser Instructions:\n" + prompt }];
         
         try {
             if (fileInput.files.length > 0) {
@@ -455,8 +465,12 @@
         finally { document.getElementById('loading').style.display = 'none'; document.getElementById('genBtn').disabled = false; }
     }
 
-    function startQuizDirectly() { renderQuiz(); }
+    function startQuizDirectly() { 
+        document.getElementById('receiveZone').style.display = 'none';
+        renderQuiz(); 
+    }
 
+    // 🚀 新版打包分享邏輯
     function openShareModal(sourceId) {
         let titleToShare = ""; let dataToShare = [];
         if (sourceId === 'current') {
@@ -471,25 +485,51 @@
             else return;
         }
 
-        const payload = { title: titleToShare, data: dataToShare };
-        const jsonStr = JSON.stringify(payload);
-        const compressedData = LZString.compressToEncodedURIComponent(jsonStr);
-        currentShareUrl = window.location.origin + window.location.pathname + "?c=" + compressedData;
-
+        // 把資料暫存在全域變數中，供按鈕點擊使用
+        currentSharePayload = { title: titleToShare, data: dataToShare };
         document.getElementById('shareModal').style.display = 'flex';
     }
 
-    function triggerNativeShare() {
-        if (navigator.share) {
-            navigator.share({ title: '快來挑戰新考卷！', text: '這是一份為你準備的專屬考卷，點擊立刻開始測驗：', url: currentShareUrl }).catch(console.error);
-        } else { alert("⚠️ 您的裝置目前不支援系統分享，請改用「複製連結」喔！"); }
-    }
+    // 分享方式一：複製純文字魔法密語 (最穩定)
+    function triggerCopyPasscode() {
+        const jsonStr = JSON.stringify(currentSharePayload);
+        const encoded = LZString.compressToBase64(jsonStr);
+        const passcode = "AIQZ-" + encoded;
 
-    function triggerCopyLink() {
-        navigator.clipboard.writeText(currentShareUrl).then(() => {
-            alert("✅ 考卷連結已成功壓縮並複製！\n這個短網址可以安全地在 iPad 貼上或透過 Line 傳送。");
+        navigator.clipboard.writeText(passcode).then(() => {
+            alert("✅「魔法密語」已成功複製！\n\n這是一段純文字代碼，不怕被 Line 截斷。\n請將這段文字貼給 Alyssa，讓她在首頁上方貼上即可解鎖！");
             closeModal('shareModal');
         }).catch(err => { alert("複製失敗，請重試。"); });
+    }
+
+    // 分享方式二：利用系統 Share API 直接傳送實體檔案
+    async function triggerShareFile() {
+        const jsonStr = JSON.stringify(currentSharePayload);
+        const blob = new Blob([jsonStr], {type: "application/json"});
+        const safeTitle = currentSharePayload.title.replace(/[\/\\?%*:|"<>]/g, '-');
+        const fileName = `${safeTitle}.json`;
+        const file = new File([blob], fileName, {type: "application/json"});
+
+        // 如果在 iPhone/iPad 上，這行會完美喚出 AirDrop 視窗
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({
+                    title: currentSharePayload.title,
+                    text: '請接收這份 AI 專屬考卷檔',
+                    files: [file]
+                });
+            } catch(e) { console.log("使用者取消分享或發生錯誤"); }
+        } else {
+            // 如果是在不支援的瀏覽器(如桌機版 Chrome)，就直接幫他下載
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert(`✅ 考卷檔已下載為 ${fileName}。\n您可以透過 Email 或其他方式傳送這個檔案。`);
+        }
+        closeModal('shareModal');
     }
 
     function startTimer() {
@@ -546,7 +586,6 @@
         playBeep(now); playBeep(now + 0.3); playBeep(now + 0.6);
     }
 
-    // 🎨 產生共用的畫布工具列與調色盤 HTML
     function getCanvasToolbarHTML(i) {
         return `
             <div class="tools">
@@ -578,6 +617,7 @@
     function renderQuiz() {
         window.history.replaceState({}, document.title, window.location.pathname);
         document.getElementById('parentZone').style.display = 'none';
+        document.getElementById('receiveZone').style.display = 'none'; // 確保接收區塊也隱藏
         document.getElementById('historyZone').style.display = 'none';
         document.getElementById('reviewZone').style.display = 'none';
         document.getElementById('studentZone').style.display = 'block';
@@ -615,7 +655,6 @@
         window.scrollTo(0, 0);
     }
 
-    // 🎨 畫筆狀態套用核心
     function applyContextSettings(i) {
         const c = canvases[i];
         const ctx = c.ctx;
@@ -630,8 +669,8 @@
             c.canvas.style.cursor = 'crosshair';
         } else if (c.tool === 'highlighter') {
             ctx.globalCompositeOperation = 'source-over'; 
-            ctx.globalAlpha = 0.4; // 半透明
-            ctx.lineWidth = 25; // 粗筆觸
+            ctx.globalAlpha = 0.4; 
+            ctx.lineWidth = 25; 
             ctx.strokeStyle = c.highlighterColor;
             c.canvas.style.touchAction = 'none';
             c.canvas.style.cursor = 'crosshair';
@@ -653,7 +692,6 @@
         const rect = canvas.parentElement.getBoundingClientRect();
         canvas.width = rect.width * ratio; canvas.height = 320 * ratio; ctx.scale(ratio, ratio);
         
-        // 預設為深藍黑筆，黃色螢光筆
         canvases[index] = { canvas, ctx, tool: 'pen', penColor: '#1e293b', highlighterColor: '#fde047', history: [] };
         applyContextSettings(index);
         
@@ -690,8 +728,6 @@
         c.canvas.height = newCssHeight * ratio;
 
         c.ctx.scale(ratio, ratio);
-        
-        // 畫布重新設定後，必須先把圖貼回來，再套用工具設定
         c.ctx.save(); c.ctx.setTransform(1, 0, 0, 1, 0, 0); 
         c.ctx.globalAlpha = 1.0; c.ctx.globalCompositeOperation = 'source-over';
         c.ctx.drawImage(tempCanvas, 0, 0); c.ctx.restore();
@@ -708,10 +744,8 @@
         applyContextSettings(i);
     }
 
-    // 🎨 切換顏色邏輯
     window.setColor = function(i, hex, element) {
         const c = canvases[i];
-        // 判斷選到的是不是螢光筆色系 (黃、粉、淺藍)
         const isHighlighterColor = ['#fde047', '#fbcfe8', '#a5f3fc'].includes(hex);
         
         if (isHighlighterColor) {
@@ -722,11 +756,9 @@
             if (c.tool !== 'pen') setTool(i, 'pen');
         }
         
-        // 更新按鈕光圈狀態
         const palette = document.getElementById(`palette_${i}`);
         palette.querySelectorAll('.color-swatch').forEach(el => el.classList.remove('active'));
         element.classList.add('active');
-        
         applyContextSettings(i);
     };
 
@@ -771,14 +803,12 @@
             let promptBase = "";
             let savedImageBase64 = null; 
 
-            // 存下學生畫的圖
             const canvasEl = canvases[i].canvas; const ctx = canvases[i].ctx;
             const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height).data;
             let isBlank = true;
             for (let j = 3; j < imgData.length; j += 4) { if (imgData[j] > 0) { isBlank = false; break; } }
             
             if (!isBlank || textInputVal === "") {
-                // 如果有畫圖，或是兩者都沒寫(空白)
                 const tempCanvas = document.createElement('canvas'); tempCanvas.width = canvasEl.width; tempCanvas.height = canvasEl.height;
                 const tempCtx = tempCanvas.getContext('2d'); tempCtx.fillStyle = '#ffffff'; tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height); tempCtx.drawImage(canvasEl, 0, 0);
                 const fullBase64 = tempCanvas.toDataURL("image/jpeg", 0.4);
@@ -794,7 +824,7 @@
             
             if (textInputVal !== "") {
                 promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Student typed: "${textInputVal}". Does it mean the same? Ignore minor typos. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
-                requestBody.contents[0].parts = [{ text: promptBase }]; // 優先採納文字輸入
+                requestBody.contents[0].parts = [{ text: promptBase }]; 
             }
 
             try {
@@ -843,13 +873,11 @@
         }
     }
 
-    // 🚀 教學白板核心：打開歷史詳情，並注入可繪圖的畫布
     function showAttemptDetails(quizId, attemptIndex) {
         let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
         let targetQuiz = library.find(q => q.id === quizId);
         if (!targetQuiz || !targetQuiz.attempts[attemptIndex]) return;
         
-        // 儲存當前修改對象
         currentReviewQuizId = quizId;
         currentReviewAttemptIndex = attemptIndex;
 
@@ -857,7 +885,7 @@
         const container = document.getElementById('reviewContainer');
         container.innerHTML = attemptData.timeSpent ? `<div style="text-align:center; font-size:18px; color:#0369a1; font-weight:bold; margin-bottom:20px; background:#e0f2fe; padding:10px; border-radius:10px;">⏱️ 本次測驗耗時：${attemptData.timeSpent}</div>` : '';
 
-        canvases = []; // 重置全域畫布陣列
+        canvases = []; 
 
         attemptData.details.forEach((item, i) => {
             const card = document.createElement('div');
@@ -882,10 +910,8 @@
             container.appendChild(card);
         });
 
-        // 載入當初學生寫的圖形
         attemptData.details.forEach((item, i) => {
             initCanvas(i);
-            // 預設改成紅筆，方便家長批改
             setColor(i, '#ef4444', document.querySelectorAll(`#palette_${i} .color-swatch`)[1]);
 
             if (item.studentImage) {
@@ -895,29 +921,28 @@
                     const ratio = window.devicePixelRatio || 1;
                     const imgDisplayHeight = img.height / ratio;
                     
-                    // 若當初學生有拉長畫布，把畫布調回原來的高度
                     if (imgDisplayHeight > 320) {
                         c.canvas.style.height = imgDisplayHeight + 'px';
                         c.canvas.height = img.height;
-                        applyContextSettings(i); // 重設參數
+                        applyContextSettings(i); 
                     }
                     
                     c.ctx.save(); c.ctx.setTransform(1,0,0,1,0,0);
                     c.ctx.globalAlpha = 1.0; c.ctx.globalCompositeOperation = 'source-over';
                     c.ctx.drawImage(img, 0, 0); c.ctx.restore();
                     
-                    c.history = [c.canvas.toDataURL()]; // 覆蓋歷史第一步為學生的原圖
+                    c.history = [c.canvas.toDataURL()]; 
                 };
                 img.src = item.studentImage;
             }
         });
 
+        document.getElementById('receiveZone').style.display = 'none'; // 隱藏接收區
         document.getElementById('historyZone').style.display = 'none';
         document.getElementById('reviewZone').style.display = 'block';
         window.scrollTo(0, 0);
     }
 
-    // 🚀 教學白板核心：儲存家長寫上去的筆跡
     function closeReviewAndSave() {
         if (currentReviewQuizId !== null && currentReviewAttemptIndex !== null) {
             let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
@@ -931,8 +956,6 @@
                         const tCtx = tempCanvas.getContext('2d');
                         tCtx.fillStyle = '#ffffff'; tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
                         tCtx.drawImage(canvases[i].canvas, 0, 0);
-                        
-                        // 覆蓋為加上家長筆跡的新圖檔
                         item.studentImage = tempCanvas.toDataURL("image/jpeg", 0.4);
                     }
                 });
@@ -1037,6 +1060,7 @@
 
     function showHistory() {
         document.getElementById('parentZone').style.display = 'none'; 
+        document.getElementById('receiveZone').style.display = 'none'; 
         document.getElementById('studentZone').style.display = 'none';
         document.getElementById('reviewZone').style.display = 'none';
         document.getElementById('historyZone').style.display = 'block';
