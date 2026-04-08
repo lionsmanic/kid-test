@@ -108,6 +108,7 @@
         
         .share-option-btn { background: #f8fafc; color: #1e293b; border: 2px solid #e2e8f0; padding: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; box-shadow: none; cursor: pointer; border-radius: 12px; transition: 0.2s;}
         .share-option-btn:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-2px); }
+        .share-option-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
         .timer-panel { background: #fff7ed; border: 3px solid #fbbf24; padding: 15px 20px; border-radius: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.1); }
         .timer-display { font-size: 28px; font-weight: 900; color: #d97706; font-family: monospace; display: flex; align-items: center; gap: 10px;}
@@ -146,7 +147,7 @@
     </div>
 
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (防崩潰極限版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (鋼鐵防護版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <hr style="border: 1px dashed #cbd5e1; margin: 30px 0;">
@@ -297,27 +298,31 @@
     let alarmTriggered = false;
     let audioCtx = null; 
 
-    // 🚀 核心：智慧空間回收，專治 Safari 5MB 空間不足
+    // 🛡️ 萬用格式化防護罩：防止 AI 亂給資料格式導致系統崩潰
+    function formatExplanation(exp) {
+        if (!exp) return "";
+        if (Array.isArray(exp)) return exp.join('<br>');
+        if (typeof exp === 'object') return JSON.stringify(exp);
+        return String(exp).replace(/\n/g, '<br>');
+    }
+
     function safeSaveLibrary(library) {
         try {
             localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
         } catch (e) {
             console.warn("Storage Error:", e);
             if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED' || e.message.includes('quota')) {
-                
                 let freed = false;
-                // 從最舊的考卷開始清理截圖，保留文字和分數
                 for (let i = library.length - 1; i >= 0; i--) {
                     let quiz = library[i];
                     if (quiz.attempts) {
                         for (let j = quiz.attempts.length - 1; j >= 0; j--) {
-                            if (i === 0 && j === 0) continue; // 絕對不能刪除剛剛才考完的最新一次成績
-                            
+                            if (i === 0 && j === 0) continue; 
                             let attempt = quiz.attempts[j];
                             if (attempt.details) {
                                 attempt.details.forEach(d => {
                                     if (d.studentImage) {
-                                        d.studentImage = null; // 清除超肥大的 base64 圖片字串
+                                        d.studentImage = null; 
                                         freed = true;
                                     }
                                 });
@@ -329,9 +334,8 @@
                 }
                 
                 if (freed) {
-                    safeSaveLibrary(library); // 清理出空間後，重新嘗試存檔
+                    safeSaveLibrary(library); 
                 } else {
-                    // 如果連截圖都沒得清了，只好忍痛刪掉最舊的一張考卷
                     if (library.length > 1) {
                         library.pop();
                         safeSaveLibrary(library);
@@ -453,7 +457,7 @@
         if (!library.some(q => q.id === id)) {
             const opts = { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
             library.unshift({ id: id, title: title, quizData: data, createdAt: new Date().toLocaleString(undefined, opts), attempts: [] });
-            safeSaveLibrary(library); // 改用安全的寫入機制
+            safeSaveLibrary(library); 
         }
     }
 
@@ -582,8 +586,11 @@
                 clearTimeout(timeoutId);
                 delete window[callbackName];
                 document.body.removeChild(script);
-                if (data.shorturl) { resolve(data.shorturl); } 
-                else { reject(new Error(data.errormessage || "伺服器回傳未知錯誤")); }
+                if (data.shorturl) {
+                    resolve(data.shorturl);
+                } else {
+                    reject(new Error(data.errormessage || "伺服器回傳未知錯誤"));
+                }
             };
 
             script.src = `https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}&callback=${callbackName}`;
@@ -931,7 +938,6 @@
         c.ctx.clearRect(0, 0, c.canvas.width, c.canvas.height);
     }
 
-    // 🚀 核心防崩潰系統：嚴格壓縮儲存體積 + 明確錯誤回報
     async function gradeWithAI() {
         let key = document.getElementById('studentApiKey').value.trim();
         if (!key) key = document.getElementById('apiKey').value.trim();
@@ -972,7 +978,6 @@
                     const canvasEl = canvases[i].canvas; 
                     const tempCanvas = document.createElement('canvas'); 
                     
-                    // 🚀 極限壓縮：防止 iPad Retina 螢幕產生巨大圖片，將長寬強制壓制在安全範圍 (最大 800px)
                     const MAX_DIMENSION = 800;
                     let scale = 1;
                     if (canvasEl.width > MAX_DIMENSION || canvasEl.height > MAX_DIMENSION) {
@@ -991,7 +996,6 @@
                     let isBlank = canvases[i].history.length === 0;
                     
                     if (!isBlank || textInputVal === "") {
-                        // 品質調至 0.3，極致縮小體積
                         const fullBase64 = tempCanvas.toDataURL("image/jpeg", 0.3);
                         savedImageBase64 = fullBase64; 
                         
@@ -1036,7 +1040,7 @@
                     feedbackClass = 'wrong'; 
                 } 
                 else if (res.isError) { 
-                    feedbackText = `⚠️ 閱卷連線不穩定，請家長幫忙看一下！<br><span style="font-size:14px; color:#ef4444;">(錯誤代碼: ${res.msg})</span><br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; 
+                    feedbackText = `⚠️ 閱卷連線不穩定，請檢查網路或 API Key！<br><span style="font-size:14px; color:#ef4444;">(錯誤代碼: ${res.msg})</span><br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; 
                     feedbackClass = 'wrong'; 
                 } 
                 else if (res.correct) { 
@@ -1049,7 +1053,10 @@
                     feedbackClass = 'wrong'; 
                 }
 
-                let explanationHtml = res.explanation ? `<div class="explanation-box"><b>💡 雙語解析：</b><br>${res.explanation.replace(/\n/g, '<br>')}</div>` : '';
+                // 🛡️ 套用萬用格式化防護罩
+                let expStr = formatExplanation(res.explanation);
+                let explanationHtml = expStr ? `<div class="explanation-box"><b>💡 雙語解析：</b><br>${expStr}</div>` : '';
+                
                 f.className = `feedback ${feedbackClass}`;
                 f.innerHTML = `<div>${feedbackText}</div> ${explanationHtml}`;
                 f.style.display = 'block';
@@ -1064,7 +1071,6 @@
 
         } catch (outerError) {
             console.error("批改系統崩潰:", outerError);
-            // 🚀 精準回報系統錯誤原因
             status.innerHTML = `<span style="color:#ef4444;">❌ 系統發生錯誤：${outerError.message || '儲存空間不足或連線中斷'}，請重試！</span>`;
             gradeBtn.disabled = false;
         }
@@ -1076,7 +1082,7 @@
         if (targetQuiz) {
             const opts = { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
             targetQuiz.attempts.unshift({ date: new Date().toLocaleString(undefined, opts), score: `${score} / ${total}`, timeSpent: timeSpent, details: details });
-            safeSaveLibrary(library); // 改用安全的寫入機制
+            safeSaveLibrary(library); 
         }
     }
 
@@ -1166,7 +1172,7 @@
                         item.studentImage = tempCanvas.toDataURL("image/jpeg", 0.4);
                     }
                 });
-                safeSaveLibrary(library); // 改用安全的寫入機制
+                safeSaveLibrary(library); 
             }
         }
         showHistory();
@@ -1182,7 +1188,10 @@
                     <div style="text-align:left; max-height: 60vh; overflow-y:auto; padding-right:10px;">`;
         
         targetQuiz.quizData.forEach((q, i) => {
-            let explanationHtml = q.explanation ? `<div style="color:#475569; font-size:15px; margin-top:8px; padding-top:8px; border-top:1px dashed #cbd5e1;"><b>💡 雙語解析：</b><br>${q.explanation.replace(/\n/g, '<br>')}</div>` : '';
+            // 🛡️ 套用萬用格式化防護罩
+            let expStr = formatExplanation(q.explanation);
+            let explanationHtml = expStr ? `<div style="color:#475569; font-size:15px; margin-top:8px; padding-top:8px; border-top:1px dashed #cbd5e1;"><b>💡 雙語解析：</b><br>${expStr}</div>` : '';
+            
             html += `
                 <div style="margin-bottom:15px; padding:15px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0;">
                     <div style="font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:18px;">Q${i+1}: ${q.question}</div>
@@ -1206,7 +1215,7 @@
             let newTitle = prompt("請輸入新的考卷名稱 (Enter new title):", currentTitle);
             if (newTitle !== null && newTitle.trim() !== "") {
                 library[targetIndex].title = newTitle.trim();
-                safeSaveLibrary(library); // 改用安全的寫入機制
+                safeSaveLibrary(library); 
                 showHistory();
             }
         }
@@ -1223,7 +1232,7 @@
         if(confirm("確定要刪除這份考卷嗎？ Delete this quiz?")) {
             let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
             library = library.filter(q => q.id !== quizId);
-            safeSaveLibrary(library); // 改用安全的寫入機制
+            safeSaveLibrary(library); 
             showHistory(); 
         }
     }
@@ -1260,7 +1269,7 @@
             library[targetIndex].quizData = translatedData;
             const newPrefix = hasChinese ? '[EN]' : '[TW]';
             library[targetIndex].title = `${newPrefix} ` + library[targetIndex].title.replace(/^\[(EN|TW)\]\s*/, '');
-            safeSaveLibrary(library); // 改用安全的寫入機制
+            safeSaveLibrary(library); 
             showHistory(); 
         } catch (e) { alert("翻譯失敗 Translation Failed: " + e.message); } 
         finally { document.getElementById('translateModal').style.display = 'none'; }
