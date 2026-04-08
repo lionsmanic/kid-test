@@ -147,7 +147,7 @@
     </div>
 
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (無縫除錯版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (蘋果防崩潰版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <hr style="border: 1px dashed #cbd5e1; margin: 30px 0;">
@@ -302,7 +302,6 @@
         const savedKey = localStorage.getItem('geminiApiKey');
         const savedLang = localStorage.getItem('quizLanguage');
         
-        // 🚀 初始化時，將 savedKey 同步填入家長首頁與學生專區的欄位
         if (savedKey) {
             document.getElementById('apiKey').value = savedKey;
             document.getElementById('studentApiKey').value = savedKey;
@@ -316,7 +315,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const compressedParam = urlParams.get('c'); 
 
-        // 啟動時偵測網址參數並還原考卷
         if (compressedParam) {
             try {
                 const jsonStr = LZString.decompressFromEncodedURIComponent(compressedParam);
@@ -363,7 +361,6 @@
         document.getElementById(id).style.display = 'none'; 
         if (id === 'shareModal') {
             document.getElementById('qrDisplayArea').style.display = 'none';
-            // 還原按鈕狀態
             const shortenBtn = document.getElementById('shortenBtn');
             shortenBtn.dataset.state = '';
             shortenBtn.style.flexDirection = 'row';
@@ -414,10 +411,7 @@
     }
 
     async function generateQuiz() {
-        // 🚀 出題時同步首頁與學生區的 API Key
-        let apiKey = document.getElementById('apiKey').value.trim();
-        if (!apiKey) apiKey = document.getElementById('studentApiKey').value.trim();
-
+        const apiKey = document.getElementById('apiKey').value.trim();
         const prompt = document.getElementById('promptText').value.trim();
         const lang = document.getElementById('langSelect').value;
         const fileInput = document.getElementById('fileInput');
@@ -427,10 +421,8 @@
         }
         
         localStorage.setItem('geminiApiKey', apiKey); 
-        document.getElementById('apiKey').value = apiKey;
         document.getElementById('studentApiKey').value = apiKey;
         localStorage.setItem('quizLanguage', lang);
-        
         document.getElementById('genBtn').disabled = true; document.getElementById('loading').style.display = 'block';
         document.getElementById('previewZone').style.display = 'none';
 
@@ -746,7 +738,6 @@
         currentQuizData.forEach((q, i) => {
             const card = document.createElement('div');
             card.className = 'question-card';
-            
             const svgHtml = q.svg ? `<div class="question-svg-container">${q.svg}</div>` : '';
 
             card.innerHTML = `
@@ -891,7 +882,7 @@
         c.ctx.clearRect(0, 0, c.canvas.width, c.canvas.height);
     }
 
-    // 🚀 核心除錯：讓 API Key 正確雙向綁定，AI 老師成功喚醒！
+    // 🚀 終極除錯：雙重防護網與畫布壓縮，徹底解決 iPad 崩潰卡住的問題！
     async function gradeWithAI() {
         let key = document.getElementById('studentApiKey').value.trim();
         if (!key) key = document.getElementById('apiKey').value.trim();
@@ -903,7 +894,6 @@
             return;
         }
 
-        // 同步儲存，下次免貼
         localStorage.setItem('geminiApiKey', key);
         document.getElementById('apiKey').value = key;
         document.getElementById('studentApiKey').value = key;
@@ -920,72 +910,110 @@
 
         let attemptDetails = [];
 
-        const gradePromises = currentQuizData.map(async (qData, i) => {
-            const ans = qData.answer;
-            const explanationText = qData.explanation || ""; 
-            const textInputVal = document.getElementById(`textInput_${i}`).value.trim();
-            let requestBody = { contents: [{ parts: [] }] };
-            let promptBase = "";
-            let savedImageBase64 = null; 
+        try {
+            const gradePromises = currentQuizData.map(async (qData, i) => {
+                try {
+                    const ans = qData.answer;
+                    const explanationText = qData.explanation || ""; 
+                    const textInputVal = document.getElementById(`textInput_${i}`).value.trim();
+                    let requestBody = { contents: [{ parts: [] }] };
+                    let promptBase = "";
+                    let savedImageBase64 = null; 
 
-            const canvasEl = canvases[i].canvas; const ctx = canvases[i].ctx;
-            const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height).data;
-            let isBlank = true;
-            for (let j = 3; j < imgData.length; j += 4) { if (imgData[j] > 0) { isBlank = false; break; } }
-            
-            if (!isBlank || textInputVal === "") {
-                const tempCanvas = document.createElement('canvas'); tempCanvas.width = canvasEl.width; tempCanvas.height = canvasEl.height;
-                const tempCtx = tempCanvas.getContext('2d'); tempCtx.fillStyle = '#ffffff'; tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height); tempCtx.drawImage(canvasEl, 0, 0);
-                const fullBase64 = tempCanvas.toDataURL("image/jpeg", 0.4);
-                savedImageBase64 = fullBase64; 
-                
-                if (isBlank && textInputVal === "") {
-                    return { index: i, question: qData.question, svg: qData.svg, ans: ans, explanation: explanationText, studentText: "", studentImg: null, correct: false, msg: "", isBlank: true, isError: false };
-                } else if (!isBlank) {
-                    promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Does this handwritten image match? Ignore bad handwriting. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
-                    requestBody.contents[0].parts.push({ text: promptBase }); requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: fullBase64.split(',')[1] } });
+                    const canvasEl = canvases[i].canvas; 
+                    const tempCanvas = document.createElement('canvas'); 
+                    
+                    // 🚀 壓縮畫布：限制寬度最高 800px，防止 iPad 視網膜螢幕造成記憶體耗盡
+                    const scale = Math.min(1, 800 / (canvasEl.width || 1));
+                    tempCanvas.width = Math.max(1, canvasEl.width * scale); 
+                    tempCanvas.height = Math.max(1, canvasEl.height * scale);
+                    
+                    const tempCtx = tempCanvas.getContext('2d'); 
+                    tempCtx.fillStyle = '#ffffff'; 
+                    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height); 
+                    tempCtx.scale(scale, scale);
+                    tempCtx.drawImage(canvasEl, 0, 0);
+
+                    // 檢查畫布是否被使用過 (利用歷史紀錄陣列來判斷最快最穩)
+                    let isBlank = canvases[i].history.length === 0;
+                    
+                    if (!isBlank || textInputVal === "") {
+                        const fullBase64 = tempCanvas.toDataURL("image/jpeg", 0.4);
+                        savedImageBase64 = fullBase64; 
+                        
+                        if (isBlank && textInputVal === "") {
+                            return { index: i, question: qData.question, svg: qData.svg, ans: ans, explanation: explanationText, studentText: "", studentImg: null, correct: false, msg: "", isBlank: true, isError: false };
+                        } else if (!isBlank) {
+                            promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Does this handwritten image match? Ignore bad handwriting. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
+                            requestBody.contents[0].parts.push({ text: promptBase }); 
+                            requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: fullBase64.split(',')[1] } });
+                        }
+                    }
+                    
+                    if (textInputVal !== "") {
+                        promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Student typed: "${textInputVal}". Does it mean the same? Ignore minor typos. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
+                        requestBody.contents[0].parts = [{ text: promptBase }]; 
+                    }
+
+                    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody)
+                    });
+                    const d = await resp.json();
+                    
+                    if (d.error) throw new Error(d.error.message);
+                    
+                    const res = JSON.parse(d.candidates[0].content.parts[0].text.replace(/```json|```/g, ''));
+                    return { index: i, question: qData.question, svg: qData.svg, ans: ans, explanation: explanationText, studentText: textInputVal, studentImg: savedImageBase64, correct: res.correct, msg: res.msg, isBlank: false, isError: false };
+                } catch (innerError) {
+                    console.error("題號 " + i + " 發生錯誤:", innerError);
+                    // 若單題發生錯誤，回傳 isError，防止整個程式崩潰
+                    return { index: i, question: qData.question, svg: qData.svg, ans: qData.answer, explanation: qData.explanation || "", studentText: document.getElementById(`textInput_${i}`).value.trim(), studentImg: null, correct: false, msg: innerError.message || "發生錯誤", isBlank: false, isError: true };
                 }
-            }
+            });
+
+            const results = await Promise.all(gradePromises);
+            let score = 0;
+
+            results.forEach(res => {
+                const f = document.getElementById(`f_${res.index}`);
+                let feedbackText = ""; let feedbackClass = "";
+
+                if (res.isBlank) { 
+                    feedbackText = `❌ 哎呀，這題忘了寫喔！ You left this blank!<br><b style="color:#b91c1c;">標準答案 Ans: ${res.ans}</b>`; 
+                    feedbackClass = 'wrong'; 
+                } 
+                else if (res.isError) { 
+                    feedbackText = `⚠️ 閱卷連線不穩定，請檢查網路或 API Key！<br><span style="font-size:14px; color:#ef4444;">(錯誤原因: ${res.msg})</span><br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; 
+                    feedbackClass = 'wrong'; 
+                } 
+                else if (res.correct) { 
+                    feedbackText = `⭕ 答對了！ Correct!<br><span style="font-size:16px; color:#15803d;">老師說: ${res.msg}</span>`; 
+                    feedbackClass = 'correct'; 
+                    score++; 
+                } 
+                else { 
+                    feedbackText = `❌ 不對喔！ Let's try again!<br><span style="font-size:16px; color:#b91c1c;">老師說: ${res.msg}</span><br><b style="color:#7f1d1d; margin-top:8px; display:block;">標準答案 Ans: ${res.ans}</b>`; 
+                    feedbackClass = 'wrong'; 
+                }
+
+                let explanationHtml = res.explanation ? `<div class="explanation-box"><b>💡 雙語解析：</b><br>${res.explanation.replace(/\n/g, '<br>')}</div>` : '';
+                f.className = `feedback ${feedbackClass}`;
+                f.innerHTML = `<div>${feedbackText}</div> ${explanationHtml}`;
+                f.style.display = 'block';
+
+                attemptDetails.push({ question: res.question, svg: res.svg, correctAnswer: res.ans, explanation: res.explanation, studentText: res.studentText, studentImage: res.studentImg, isCorrect: res.correct && !res.isBlank && !res.isError, feedbackHtml: f.innerHTML });
+            });
+
+            status.innerText = `🎉 批改完成！總得分： ${score} / ${currentQuizData.length}`;
+            gradeBtn.style.display = 'none';
             
-            if (textInputVal !== "") {
-                promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Student typed: "${textInputVal}". Does it mean the same? Ignore minor typos. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
-                requestBody.contents[0].parts = [{ text: promptBase }]; 
-            }
+            saveAttemptRecordWithDetails(currentQuizId, score, currentQuizData.length, attemptDetails, finalTimeSpent);
 
-            try {
-                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody)
-                });
-                const d = await resp.json();
-                const res = JSON.parse(d.candidates[0].content.parts[0].text.replace(/```json|```/g, ''));
-                return { index: i, question: qData.question, svg: qData.svg, ans: ans, explanation: explanationText, studentText: textInputVal, studentImg: savedImageBase64, correct: res.correct, msg: res.msg, isBlank: false, isError: false };
-            } catch(e) { return { index: i, question: qData.question, svg: qData.svg, ans: ans, explanation: explanationText, studentText: textInputVal, studentImg: savedImageBase64, correct: false, msg: "", isBlank: false, isError: true }; }
-        });
-
-        const results = await Promise.all(gradePromises);
-        let score = 0;
-
-        results.forEach(res => {
-            const f = document.getElementById(`f_${res.index}`);
-            let feedbackText = ""; let feedbackClass = "";
-
-            if (res.isBlank) { feedbackText = `❌ 哎呀，這題忘了寫喔！ You left this blank!<br><b style="color:#b91c1c;">標準答案 Ans: ${res.ans}</b>`; feedbackClass = 'wrong'; } 
-            else if (res.isError) { feedbackText = `⚠️ 閱卷連線不穩定，請家長幫忙看一下！<br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; feedbackClass = 'wrong'; } 
-            else if (res.correct) { feedbackText = `⭕ 答對了！ Correct!<br><span style="font-size:16px; color:#15803d;">老師說: ${res.msg}</span>`; feedbackClass = 'correct'; score++; } 
-            else { feedbackText = `❌ 不對喔！ Let's try again!<br><span style="font-size:16px; color:#b91c1c;">老師說: ${res.msg}</span><br><b style="color:#7f1d1d; margin-top:8px; display:block;">標準答案 Ans: ${res.ans}</b>`; feedbackClass = 'wrong'; }
-
-            let explanationHtml = res.explanation ? `<div class="explanation-box"><b>💡 雙語解析：</b><br>${res.explanation.replace(/\n/g, '<br>')}</div>` : '';
-            f.className = `feedback ${feedbackClass}`;
-            f.innerHTML = `<div>${feedbackText}</div> ${explanationHtml}`;
-            f.style.display = 'block';
-
-            attemptDetails.push({ question: res.question, svg: res.svg, correctAnswer: res.ans, explanation: res.explanation, studentText: res.studentText, studentImage: res.studentImg, isCorrect: res.correct && !res.isBlank && !res.isError, feedbackHtml: f.innerHTML });
-        });
-
-        status.innerText = `🎉 批改完成！總得分： ${score} / ${currentQuizData.length}`;
-        gradeBtn.style.display = 'none';
-        
-        saveAttemptRecordWithDetails(currentQuizId, score, currentQuizData.length, attemptDetails, finalTimeSpent);
+        } catch (outerError) {
+            console.error("批改系統崩潰:", outerError);
+            status.innerHTML = `<span style="color:#ef4444;">❌ 系統發生預期外的錯誤，請重新整理後再試一次！</span>`;
+            gradeBtn.disabled = false;
+        }
     }
 
     function saveAttemptRecordWithDetails(quizId, score, total, details, timeSpent) {
