@@ -108,6 +108,7 @@
         
         .share-option-btn { background: #f8fafc; color: #1e293b; border: 2px solid #e2e8f0; padding: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; box-shadow: none; cursor: pointer; border-radius: 12px; transition: 0.2s;}
         .share-option-btn:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-2px); }
+        .share-option-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
         .timer-panel { background: #fff7ed; border: 3px solid #fbbf24; padding: 15px 20px; border-radius: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.1); }
         .timer-display { font-size: 28px; font-weight: 900; color: #d97706; font-family: monospace; display: flex; align-items: center; gap: 10px;}
@@ -146,7 +147,7 @@
     </div>
 
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (短網址解鎖版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (跨裝置金鑰版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <hr style="border: 1px dashed #cbd5e1; margin: 30px 0;">
@@ -186,6 +187,17 @@
     <div id="studentZone" class="section student-section">
         <h1 id="quizTitle" style="color: var(--secondary); font-size: 28px; margin-top:0;">⭐ 知識挑戰 Mission Start ⭐</h1>
         
+        <div id="studentApiZone" style="background: #fff; padding: 15px; border-radius: 12px; border: 2px dashed #cbd5e1; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="const div = document.getElementById('studentApiInputDiv'); div.style.display = div.style.display === 'none' ? 'block' : 'none';">
+                <h4 style="margin: 0; color: #4a5568; font-size: 16px;">🔑 AI 老師啟動金鑰 (家長專區)</h4>
+                <span style="color: #94a3b8; font-size: 12px;">▼ 點擊展開/隱藏</span>
+            </div>
+            <div id="studentApiInputDiv" style="display: none; margin-top: 15px;">
+                <input type="password" id="studentApiKey" placeholder="請貼上 Gemini API Key 喚醒 AI 老師..." style="margin-bottom: 0;">
+                <div style="font-size: 13px; color: #64748b; margin-top: 8px;">*若用 iPad 相機或 Line 開啟，因瀏覽器不共用記憶體，需在此貼上 Key 才能批改喔！</div>
+            </div>
+        </div>
+
         <div class="timer-panel">
             <div class="timer-display">
                 ⏱️ <span id="timeElapsed">00:00</span>
@@ -289,13 +301,21 @@
     window.onload = function() {
         const savedKey = localStorage.getItem('geminiApiKey');
         const savedLang = localStorage.getItem('quizLanguage');
-        if (savedKey) document.getElementById('apiKey').value = savedKey;
+        
+        // 🚀 初始化時，將 savedKey 同步填入家長首頁與學生專區的欄位
+        if (savedKey) {
+            document.getElementById('apiKey').value = savedKey;
+            document.getElementById('studentApiKey').value = savedKey;
+            document.getElementById('studentApiInputDiv').style.display = 'none';
+        } else {
+            document.getElementById('studentApiInputDiv').style.display = 'block';
+        }
+        
         if (savedLang) document.getElementById('langSelect').value = savedLang;
 
         const urlParams = new URLSearchParams(window.location.search);
         const compressedParam = urlParams.get('c'); 
 
-        // 啟動時偵測網址參數並還原考卷
         if (compressedParam) {
             try {
                 const jsonStr = LZString.decompressFromEncodedURIComponent(compressedParam);
@@ -342,7 +362,6 @@
         document.getElementById(id).style.display = 'none'; 
         if (id === 'shareModal') {
             document.getElementById('qrDisplayArea').style.display = 'none';
-            // 還原按鈕狀態
             const shortenBtn = document.getElementById('shortenBtn');
             shortenBtn.dataset.state = '';
             shortenBtn.style.flexDirection = 'row';
@@ -491,11 +510,10 @@
         document.getElementById('shareModal').style.display = 'flex';
     }
 
-    // 🚀 核心黑科技：呼叫 is.gd API 產生極度短網址
     function generateShortUrl(longUrl) {
         return new Promise((resolve, reject) => {
             if (longUrl.length > 5000) {
-                reject(new Error("考卷包含了大量圖形資料，長度突破了伺服器極限！"));
+                reject(new Error("考卷包含了大量複雜的圖形資料，長度已突破縮網址伺服器的極限！"));
                 return;
             }
 
@@ -530,7 +548,6 @@
         });
     }
 
-    // 🚀 終極備用複製法：繞過 iOS 限制
     window.fallbackCopyTextToClipboard = function(text) {
         const textArea = document.createElement("textarea");
         textArea.value = text;
@@ -548,7 +565,6 @@
         document.body.removeChild(textArea);
     };
 
-    // 🚀 蘋果防護解鎖版：兩段式流程
     async function triggerShortLink() {
         const btn = document.getElementById('shortenBtn');
         if (btn.dataset.state === 'done') return; 
@@ -560,7 +576,6 @@
         try {
             const shortUrl = await generateShortUrl(currentShareUrl);
             
-            // 狀態改為完成，變成顯示介面 + 直接點擊的複製按鈕
             btn.dataset.state = 'done';
             btn.style.cursor = 'default';
             btn.style.flexDirection = 'column';
@@ -722,7 +737,6 @@
         currentQuizData.forEach((q, i) => {
             const card = document.createElement('div');
             card.className = 'question-card';
-            
             const svgHtml = q.svg ? `<div class="question-svg-container">${q.svg}</div>` : '';
 
             card.innerHTML = `
@@ -867,8 +881,23 @@
         c.ctx.clearRect(0, 0, c.canvas.width, c.canvas.height);
     }
 
+    // 🚀 核心修正：讓學生端與首頁共享 API Key (解決跨裝置/Line的批改失效問題)
     async function gradeWithAI() {
-        const key = document.getElementById('apiKey').value;
+        let key = document.getElementById('studentApiKey').value.trim();
+        if (!key) key = document.getElementById('apiKey').value.trim();
+
+        if (!key) {
+            alert("⚠️ 找不到 API Key！\\n請在上方的「🔑 AI 老師啟動金鑰」中貼上您的 Gemini API Key，AI 老師才能幫忙閱卷喔！");
+            document.getElementById('studentApiInputDiv').style.display = 'block';
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        // 同步寫入各個欄位與記憶體，讓下次免輸
+        localStorage.setItem('geminiApiKey', key);
+        document.getElementById('apiKey').value = key;
+        document.getElementById('studentApiKey').value = key;
+
         const status = document.getElementById('gradingStatus');
         const gradeBtn = document.getElementById('gradeBtn');
         
