@@ -147,7 +147,7 @@
     </div>
 
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (鋼鐵防護版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (萬用解碼版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <hr style="border: 1px dashed #cbd5e1; margin: 30px 0;">
@@ -298,12 +298,23 @@
     let alarmTriggered = false;
     let audioCtx = null; 
 
-    // 🛡️ 萬用格式化防護罩：防止 AI 亂給資料格式導致系統崩潰
-    function formatExplanation(exp) {
-        if (!exp) return "";
-        if (Array.isArray(exp)) return exp.join('<br>');
-        if (typeof exp === 'object') return JSON.stringify(exp);
-        return String(exp).replace(/\n/g, '<br>');
+    // 🛡️ 終極萬用解碼器 (Safe Format Text)
+    // 專門對付 AI 亂回傳的各種奇怪格式 (陣列、字典、物件)，把它們全部清洗成乾淨的網頁文字
+    function safeFormatText(val) {
+        if (val === null || val === undefined) return "";
+        if (typeof val === 'string') return val.replace(/\n/g, '<br>');
+        
+        // 如果 AI 吐出陣列 ["第一步...", "第二步..."]
+        if (Array.isArray(val)) {
+            return val.map(v => typeof v === 'object' ? safeFormatText(v) : String(v)).join('<br>');
+        }
+        
+        // 如果 AI 吐出字典 {"traditional chinese": "...", "english": "..."}
+        if (typeof val === 'object') {
+            return Object.values(val).map(v => typeof v === 'object' ? safeFormatText(v) : String(v)).join('<br><br>');
+        }
+        
+        return String(val).replace(/\n/g, '<br>');
     }
 
     function safeSaveLibrary(library) {
@@ -481,13 +492,14 @@
         document.getElementById('genBtn').disabled = true; document.getElementById('loading').style.display = 'block';
         document.getElementById('previewZone').style.display = 'none';
 
+        // 🛡️ 更新：在提示詞中下達最嚴格的格式禁令 (禁止 JSON Objects)
         const sysPrompt = `You are an expert educational assistant. Create a quiz based strictly on the provided references and user instructions. 
         MUST output strictly as a JSON array of objects with keys: "question", "answer", "explanation", and optionally "svg". 
         - "question": The question text in exactly ${lang}.
-        - "answer": The final correct answer. MUST be provided in BOTH Traditional Chinese and English.
-        - "explanation": Detailed step-by-step calculation or reasoning. MUST be provided in BOTH Traditional Chinese and English, clearly separated.
+        - "answer": The final correct answer as a SINGLE STRING containing BOTH Traditional Chinese and English. DO NOT USE NESTED OBJECTS OR DICTIONARIES.
+        - "explanation": Detailed step-by-step calculation as a SINGLE STRING. MUST contain BOTH Traditional Chinese and English, separated by newlines. DO NOT USE NESTED OBJECTS OR DICTIONARIES.
         If a geometric shape, chart, or diagram is necessary, provide valid inline HTML SVG code as a string in the "svg" key. 
-        CRITICAL SVG RULES: The SVG MUST contain a proper 'viewBox' attribute (e.g., viewBox="0 0 300 300"). DO NOT include hardcoded 'width' or 'height' attributes in the <svg> tag. Use clear contrasting colors.
+        CRITICAL SVG RULES: The SVG MUST contain a proper 'viewBox' attribute. DO NOT include hardcoded 'width' or 'height' attributes in the <svg> tag. Use clear contrasting colors.
         Return ONLY the pure JSON array. Do not include introductory text.`;
         
         let apiParts = [{ text: sysPrompt + "\n\nUser Instructions:\n" + prompt }];
@@ -525,9 +537,9 @@
 
             document.getElementById('previewList').innerHTML = currentQuizData.map((q, i) => `
                 <div style="margin-bottom:15px; padding-bottom:10px; border-bottom:1px dashed #e2e8f0;">
-                    <b>Q${i+1}:</b> ${q.question}<br>
+                    <b>Q${i+1}:</b> ${safeFormatText(q.question)}<br>
                     ${q.svg ? `<div class="question-svg-container">${q.svg}</div>` : ''}
-                    <div style="color:#10b981; font-weight:bold; margin-top: 5px;">(Ans: ${q.answer})</div>
+                    <div style="color:#10b981; font-weight:bold; margin-top: 5px;">(Ans: ${safeFormatText(q.answer)})</div>
                 </div>
             `).join('');
             
@@ -779,7 +791,8 @@
         document.getElementById('reviewZone').style.display = 'none';
         document.getElementById('studentZone').style.display = 'block';
         
-        const hasChinese = /[\u4e00-\u9fa5]/.test(currentQuizData[0].question);
+        // 🛡️ 套用解碼器
+        const hasChinese = /[\u4e00-\u9fa5]/.test(safeFormatText(currentQuizData[0].question));
         document.getElementById('quizTitle').innerText = hasChinese ? '⭐ 知識挑戰開始 ⭐' : '⭐ Mission Start ⭐';
         
         document.getElementById('gradeBtn').style.display = 'block'; document.getElementById('gradeBtn').disabled = false;
@@ -797,7 +810,7 @@
             const svgHtml = q.svg ? `<div class="question-svg-container">${q.svg}</div>` : '';
 
             card.innerHTML = `
-                <div class="question-text"><span style="color:#94a3b8; font-size:18px;">Q${i+1}.</span><br>${q.question}</div>
+                <div class="question-text"><span style="color:#94a3b8; font-size:18px;">Q${i+1}.</span><br>${safeFormatText(q.question)}</div>
                 ${svgHtml}
                 <div class="input-group"><h4>⌨️ 鍵盤打字 Type your answer</h4><input type="text" id="textInput_${i}" class="text-ans-input" autocomplete="off" placeholder="..."></div>
                 <div class="input-group" style="background: #fff; border: 2px dashed #e2e8f0; padding-bottom:10px;">
@@ -968,8 +981,9 @@
         try {
             const gradePromises = currentQuizData.map(async (qData, i) => {
                 try {
-                    const ans = qData.answer;
-                    const explanationText = qData.explanation || ""; 
+                    // 🛡️ 批改時也套用解碼器
+                    const ans = safeFormatText(qData.answer);
+                    const explanationText = safeFormatText(qData.explanation); 
                     const textInputVal = document.getElementById(`textInput_${i}`).value.trim();
                     let requestBody = { contents: [{ parts: [] }] };
                     let promptBase = "";
@@ -1002,14 +1016,14 @@
                         if (isBlank && textInputVal === "") {
                             return { index: i, question: qData.question, svg: qData.svg, ans: ans, explanation: explanationText, studentText: "", studentImg: null, correct: false, msg: "", isBlank: true, isError: false };
                         } else if (!isBlank) {
-                            promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Does this handwritten image match? Ignore bad handwriting. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
+                            promptBase = `You are a supportive teacher. Q: "${safeFormatText(qData.question)}". Correct ans: "${ans}". Does this handwritten image match? Ignore bad handwriting. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
                             requestBody.contents[0].parts.push({ text: promptBase }); 
                             requestBody.contents[0].parts.push({ inline_data: { mime_type: "image/jpeg", data: fullBase64.split(',')[1] } });
                         }
                     }
                     
                     if (textInputVal !== "") {
-                        promptBase = `You are a supportive teacher. Q: "${qData.question}". Correct ans: "${ans}". Student typed: "${textInputVal}". Does it mean the same? Ignore minor typos. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
+                        promptBase = `You are a supportive teacher. Q: "${safeFormatText(qData.question)}". Correct ans: "${ans}". Student typed: "${textInputVal}". Does it mean the same? Ignore minor typos. Return JSON: {"correct": true or false, "msg": "Brief engaging feedback in the language of the question."}`;
                         requestBody.contents[0].parts = [{ text: promptBase }]; 
                     }
 
@@ -1024,7 +1038,7 @@
                     return { index: i, question: qData.question, svg: qData.svg, ans: ans, explanation: explanationText, studentText: textInputVal, studentImg: savedImageBase64, correct: res.correct, msg: res.msg, isBlank: false, isError: false };
                 } catch (innerError) {
                     console.error("單題發生錯誤:", innerError);
-                    return { index: i, question: qData.question, svg: qData.svg, ans: qData.answer, explanation: qData.explanation || "", studentText: document.getElementById(`textInput_${i}`).value.trim(), studentImg: null, correct: false, msg: innerError.message || "發生錯誤", isBlank: false, isError: true };
+                    return { index: i, question: qData.question, svg: qData.svg, ans: safeFormatText(qData.answer), explanation: safeFormatText(qData.explanation), studentText: document.getElementById(`textInput_${i}`).value.trim(), studentImg: null, correct: false, msg: innerError.message || "發生錯誤", isBlank: false, isError: true };
                 }
             });
 
@@ -1040,7 +1054,7 @@
                     feedbackClass = 'wrong'; 
                 } 
                 else if (res.isError) { 
-                    feedbackText = `⚠️ 閱卷連線不穩定，請檢查網路或 API Key！<br><span style="font-size:14px; color:#ef4444;">(錯誤代碼: ${res.msg})</span><br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; 
+                    feedbackText = `⚠️ 閱卷連線不穩定，請家長幫忙看一下！<br><span style="font-size:14px; color:#ef4444;">(錯誤代碼: ${res.msg})</span><br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; 
                     feedbackClass = 'wrong'; 
                 } 
                 else if (res.correct) { 
@@ -1053,10 +1067,7 @@
                     feedbackClass = 'wrong'; 
                 }
 
-                // 🛡️ 套用萬用格式化防護罩
-                let expStr = formatExplanation(res.explanation);
-                let explanationHtml = expStr ? `<div class="explanation-box"><b>💡 雙語解析：</b><br>${expStr}</div>` : '';
-                
+                let explanationHtml = res.explanation ? `<div class="explanation-box"><b>💡 雙語解析：</b><br>${res.explanation}</div>` : '';
                 f.className = `feedback ${feedbackClass}`;
                 f.innerHTML = `<div>${feedbackText}</div> ${explanationHtml}`;
                 f.style.display = 'block';
@@ -1107,8 +1118,9 @@
             const svgHtml = item.svg ? `<div class="question-svg-container">${item.svg}</div>` : '';
             const feedbackClass = item.isCorrect ? 'correct' : 'wrong';
 
+            // 🛡️ 套用解碼器以防萬一
             card.innerHTML = `
-                <div class="question-text"><span style="color:#94a3b8; font-size:18px;">Q${i+1}.</span><br>${item.question}</div>
+                <div class="question-text"><span style="color:#94a3b8; font-size:18px;">Q${i+1}.</span><br>${safeFormatText(item.question)}</div>
                 ${svgHtml}
                 <div class="input-group">
                     <h4>⌨️ 當時的打字內容 (Type Answer)</h4>
@@ -1188,15 +1200,15 @@
                     <div style="text-align:left; max-height: 60vh; overflow-y:auto; padding-right:10px;">`;
         
         targetQuiz.quizData.forEach((q, i) => {
-            // 🛡️ 套用萬用格式化防護罩
-            let expStr = formatExplanation(q.explanation);
+            // 🛡️ 套用解碼器
+            let expStr = safeFormatText(q.explanation);
             let explanationHtml = expStr ? `<div style="color:#475569; font-size:15px; margin-top:8px; padding-top:8px; border-top:1px dashed #cbd5e1;"><b>💡 雙語解析：</b><br>${expStr}</div>` : '';
             
             html += `
                 <div style="margin-bottom:15px; padding:15px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0;">
-                    <div style="font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:18px;">Q${i+1}: ${q.question}</div>
+                    <div style="font-weight:bold; color:#1e293b; margin-bottom:10px; font-size:18px;">Q${i+1}: ${safeFormatText(q.question)}</div>
                     ${q.svg ? `<div class="question-svg-container" style="background:#fff; margin-bottom:10px;">${q.svg}</div>` : ''}
-                    <div style="color:#059669; font-weight:800; font-size: 18px;">Ans: ${q.answer}</div>
+                    <div style="color:#059669; font-weight:800; font-size: 18px;">Ans: ${safeFormatText(q.answer)}</div>
                     ${explanationHtml}
                 </div>
             `;
@@ -1253,7 +1265,11 @@
         document.getElementById('translateStatusText').innerText = hasChinese ? "Converting quiz to English..." : "正在將考卷翻譯為繁體中文...";
         document.getElementById('translateModal').style.display = 'flex';
 
-        const sysPrompt = `Translate the following quiz into ${targetLanguage}. Maintain the exact JSON array structure with "question", "answer", "explanation", and "svg" keys. Do NOT wrap in markdown \`\`\`json. Return ONLY pure JSON.`;
+        // 🛡️ 翻譯指令同步強化
+        const sysPrompt = `Translate the following quiz into ${targetLanguage}. Maintain the exact JSON array structure with "question", "answer", "explanation", and "svg" keys. 
+        - "answer" MUST be a single string containing both languages. DO NOT use nested objects.
+        - "explanation" MUST be a single string containing both languages. DO NOT use nested objects.
+        Do NOT wrap in markdown \`\`\`json. Return ONLY pure JSON.`;
         
         try {
             const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
