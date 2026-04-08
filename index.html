@@ -108,7 +108,6 @@
         
         .share-option-btn { background: #f8fafc; color: #1e293b; border: 2px solid #e2e8f0; padding: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; box-shadow: none; cursor: pointer; border-radius: 12px; transition: 0.2s;}
         .share-option-btn:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-2px); }
-        .share-option-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
         .timer-panel { background: #fff7ed; border: 3px solid #fbbf24; padding: 15px 20px; border-radius: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.1); }
         .timer-display { font-size: 28px; font-weight: 900; color: #d97706; font-family: monospace; display: flex; align-items: center; gap: 10px;}
@@ -147,7 +146,7 @@
     </div>
 
     <div id="parentZone" class="section">
-        <h2>✨ AI 魔法綜合出題中心 (蘋果防崩潰版)</h2>
+        <h2>✨ AI 魔法綜合出題中心 (防崩潰極限版)</h2>
         <input type="password" id="apiKey" placeholder="🔑 輸入 Gemini API Key...">
         
         <hr style="border: 1px dashed #cbd5e1; margin: 30px 0;">
@@ -194,7 +193,7 @@
             </div>
             <div id="studentApiInputDiv" style="display: none; margin-top: 15px;">
                 <input type="password" id="studentApiKey" placeholder="請貼上 Gemini API Key 喚醒 AI 老師..." style="margin-bottom: 0;">
-                <div style="font-size: 13px; color: #64748b; margin-top: 8px;">*若用 iPad 相機或 Line 開啟，因瀏覽器不共用記憶體，需在此貼上 Key 才能批改喔！</div>
+                <div style="font-size: 13px; color: #64748b; margin-top: 8px;">*若用 iPad 臨時瀏覽器開啟，因記憶體不共用，需在此貼上 Key 才能批改喔！</div>
             </div>
         </div>
 
@@ -297,6 +296,54 @@
     let alarmTimeSeconds = 0;
     let alarmTriggered = false;
     let audioCtx = null; 
+
+    // 🚀 核心：智慧空間回收，專治 Safari 5MB 空間不足
+    function safeSaveLibrary(library) {
+        try {
+            localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
+        } catch (e) {
+            console.warn("Storage Error:", e);
+            if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED' || e.message.includes('quota')) {
+                
+                let freed = false;
+                // 從最舊的考卷開始清理截圖，保留文字和分數
+                for (let i = library.length - 1; i >= 0; i--) {
+                    let quiz = library[i];
+                    if (quiz.attempts) {
+                        for (let j = quiz.attempts.length - 1; j >= 0; j--) {
+                            if (i === 0 && j === 0) continue; // 絕對不能刪除剛剛才考完的最新一次成績
+                            
+                            let attempt = quiz.attempts[j];
+                            if (attempt.details) {
+                                attempt.details.forEach(d => {
+                                    if (d.studentImage) {
+                                        d.studentImage = null; // 清除超肥大的 base64 圖片字串
+                                        freed = true;
+                                    }
+                                });
+                            }
+                            if (freed) break; 
+                        }
+                    }
+                    if (freed) break;
+                }
+                
+                if (freed) {
+                    safeSaveLibrary(library); // 清理出空間後，重新嘗試存檔
+                } else {
+                    // 如果連截圖都沒得清了，只好忍痛刪掉最舊的一張考卷
+                    if (library.length > 1) {
+                        library.pop();
+                        safeSaveLibrary(library);
+                    } else {
+                        alert("❌ iPad 的瀏覽器儲存空間已達絕對極限，無法儲存此次作答！");
+                    }
+                }
+            } else {
+                throw e;
+            }
+        }
+    }
 
     window.onload = function() {
         const savedKey = localStorage.getItem('geminiApiKey');
@@ -406,12 +453,14 @@
         if (!library.some(q => q.id === id)) {
             const opts = { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
             library.unshift({ id: id, title: title, quizData: data, createdAt: new Date().toLocaleString(undefined, opts), attempts: [] });
-            localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
+            safeSaveLibrary(library); // 改用安全的寫入機制
         }
     }
 
     async function generateQuiz() {
-        const apiKey = document.getElementById('apiKey').value.trim();
+        let apiKey = document.getElementById('apiKey').value.trim();
+        if (!apiKey) apiKey = document.getElementById('studentApiKey').value.trim();
+
         const prompt = document.getElementById('promptText').value.trim();
         const lang = document.getElementById('langSelect').value;
         const fileInput = document.getElementById('fileInput');
@@ -421,8 +470,10 @@
         }
         
         localStorage.setItem('geminiApiKey', apiKey); 
+        document.getElementById('apiKey').value = apiKey;
         document.getElementById('studentApiKey').value = apiKey;
         localStorage.setItem('quizLanguage', lang);
+        
         document.getElementById('genBtn').disabled = true; document.getElementById('loading').style.display = 'block';
         document.getElementById('previewZone').style.display = 'none';
 
@@ -531,11 +582,8 @@
                 clearTimeout(timeoutId);
                 delete window[callbackName];
                 document.body.removeChild(script);
-                if (data.shorturl) {
-                    resolve(data.shorturl);
-                } else {
-                    reject(new Error(data.errormessage || "伺服器回傳未知錯誤"));
-                }
+                if (data.shorturl) { resolve(data.shorturl); } 
+                else { reject(new Error(data.errormessage || "伺服器回傳未知錯誤")); }
             };
 
             script.src = `https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}&callback=${callbackName}`;
@@ -738,6 +786,7 @@
         currentQuizData.forEach((q, i) => {
             const card = document.createElement('div');
             card.className = 'question-card';
+            
             const svgHtml = q.svg ? `<div class="question-svg-container">${q.svg}</div>` : '';
 
             card.innerHTML = `
@@ -882,7 +931,7 @@
         c.ctx.clearRect(0, 0, c.canvas.width, c.canvas.height);
     }
 
-    // 🚀 終極除錯：雙重防護網與畫布壓縮，徹底解決 iPad 崩潰卡住的問題！
+    // 🚀 核心防崩潰系統：嚴格壓縮儲存體積 + 明確錯誤回報
     async function gradeWithAI() {
         let key = document.getElementById('studentApiKey').value.trim();
         if (!key) key = document.getElementById('apiKey').value.trim();
@@ -923,8 +972,13 @@
                     const canvasEl = canvases[i].canvas; 
                     const tempCanvas = document.createElement('canvas'); 
                     
-                    // 🚀 壓縮畫布：限制寬度最高 800px，防止 iPad 視網膜螢幕造成記憶體耗盡
-                    const scale = Math.min(1, 800 / (canvasEl.width || 1));
+                    // 🚀 極限壓縮：防止 iPad Retina 螢幕產生巨大圖片，將長寬強制壓制在安全範圍 (最大 800px)
+                    const MAX_DIMENSION = 800;
+                    let scale = 1;
+                    if (canvasEl.width > MAX_DIMENSION || canvasEl.height > MAX_DIMENSION) {
+                        scale = Math.min(MAX_DIMENSION / (canvasEl.width || 1), MAX_DIMENSION / (canvasEl.height || 1));
+                    }
+                    
                     tempCanvas.width = Math.max(1, canvasEl.width * scale); 
                     tempCanvas.height = Math.max(1, canvasEl.height * scale);
                     
@@ -934,11 +988,11 @@
                     tempCtx.scale(scale, scale);
                     tempCtx.drawImage(canvasEl, 0, 0);
 
-                    // 檢查畫布是否被使用過 (利用歷史紀錄陣列來判斷最快最穩)
                     let isBlank = canvases[i].history.length === 0;
                     
                     if (!isBlank || textInputVal === "") {
-                        const fullBase64 = tempCanvas.toDataURL("image/jpeg", 0.4);
+                        // 品質調至 0.3，極致縮小體積
+                        const fullBase64 = tempCanvas.toDataURL("image/jpeg", 0.3);
                         savedImageBase64 = fullBase64; 
                         
                         if (isBlank && textInputVal === "") {
@@ -965,8 +1019,7 @@
                     const res = JSON.parse(d.candidates[0].content.parts[0].text.replace(/```json|```/g, ''));
                     return { index: i, question: qData.question, svg: qData.svg, ans: ans, explanation: explanationText, studentText: textInputVal, studentImg: savedImageBase64, correct: res.correct, msg: res.msg, isBlank: false, isError: false };
                 } catch (innerError) {
-                    console.error("題號 " + i + " 發生錯誤:", innerError);
-                    // 若單題發生錯誤，回傳 isError，防止整個程式崩潰
+                    console.error("單題發生錯誤:", innerError);
                     return { index: i, question: qData.question, svg: qData.svg, ans: qData.answer, explanation: qData.explanation || "", studentText: document.getElementById(`textInput_${i}`).value.trim(), studentImg: null, correct: false, msg: innerError.message || "發生錯誤", isBlank: false, isError: true };
                 }
             });
@@ -983,7 +1036,7 @@
                     feedbackClass = 'wrong'; 
                 } 
                 else if (res.isError) { 
-                    feedbackText = `⚠️ 閱卷連線不穩定，請檢查網路或 API Key！<br><span style="font-size:14px; color:#ef4444;">(錯誤原因: ${res.msg})</span><br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; 
+                    feedbackText = `⚠️ 閱卷連線不穩定，請家長幫忙看一下！<br><span style="font-size:14px; color:#ef4444;">(錯誤代碼: ${res.msg})</span><br><b style="color:#7f1d1d;">標準答案 Ans: ${res.ans}</b>`; 
                     feedbackClass = 'wrong'; 
                 } 
                 else if (res.correct) { 
@@ -1011,7 +1064,8 @@
 
         } catch (outerError) {
             console.error("批改系統崩潰:", outerError);
-            status.innerHTML = `<span style="color:#ef4444;">❌ 系統發生預期外的錯誤，請重新整理後再試一次！</span>`;
+            // 🚀 精準回報系統錯誤原因
+            status.innerHTML = `<span style="color:#ef4444;">❌ 系統發生錯誤：${outerError.message || '儲存空間不足或連線中斷'}，請重試！</span>`;
             gradeBtn.disabled = false;
         }
     }
@@ -1022,7 +1076,7 @@
         if (targetQuiz) {
             const opts = { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
             targetQuiz.attempts.unshift({ date: new Date().toLocaleString(undefined, opts), score: `${score} / ${total}`, timeSpent: timeSpent, details: details });
-            localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
+            safeSaveLibrary(library); // 改用安全的寫入機制
         }
     }
 
@@ -1112,7 +1166,7 @@
                         item.studentImage = tempCanvas.toDataURL("image/jpeg", 0.4);
                     }
                 });
-                localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
+                safeSaveLibrary(library); // 改用安全的寫入機制
             }
         }
         showHistory();
@@ -1152,7 +1206,7 @@
             let newTitle = prompt("請輸入新的考卷名稱 (Enter new title):", currentTitle);
             if (newTitle !== null && newTitle.trim() !== "") {
                 library[targetIndex].title = newTitle.trim();
-                localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
+                safeSaveLibrary(library); // 改用安全的寫入機制
                 showHistory();
             }
         }
@@ -1169,7 +1223,7 @@
         if(confirm("確定要刪除這份考卷嗎？ Delete this quiz?")) {
             let library = JSON.parse(localStorage.getItem('smartQuizLibrary') || '[]');
             library = library.filter(q => q.id !== quizId);
-            localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
+            safeSaveLibrary(library); // 改用安全的寫入機制
             showHistory(); 
         }
     }
@@ -1206,7 +1260,7 @@
             library[targetIndex].quizData = translatedData;
             const newPrefix = hasChinese ? '[EN]' : '[TW]';
             library[targetIndex].title = `${newPrefix} ` + library[targetIndex].title.replace(/^\[(EN|TW)\]\s*/, '');
-            localStorage.setItem('smartQuizLibrary', JSON.stringify(library));
+            safeSaveLibrary(library); // 改用安全的寫入機制
             showHistory(); 
         } catch (e) { alert("翻譯失敗 Translation Failed: " + e.message); } 
         finally { document.getElementById('translateModal').style.display = 'none'; }
